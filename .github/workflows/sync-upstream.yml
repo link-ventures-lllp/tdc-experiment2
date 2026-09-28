@@ -1,0 +1,27 @@
+name: Sync fork with upstream
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify upstream parent is configured
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh repo view "$GITHUB_REPOSITORY" --json isFork,parent --jq '.isFork and (.parent != null)' | grep -qx 'true'; then
+            echo "::error::This repository is not configured as a fork with an upstream parent on GitHub."
+            exit 1
+          fi
+
+      - name: Sync main from upstream
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh repo sync "$GITHUB_REPOSITORY" --branch main
