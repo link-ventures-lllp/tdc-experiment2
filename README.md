@@ -89,6 +89,12 @@ the `og:image` / `twitter:image` URLs. Most platforms cache the first unfurl the
 change re-scrape with the Facebook Sharing Debugger, LinkedIn Post Inspector, or by appending a
 throwaway query string to the link.
 
+### Analytics
+
+`index.html` loads the Google Analytics 4 tag at the top of `<head>`. Measurement ID
+`G-VLJWCH6WR1` (data stream 15892806857). Page views are collected automatically; nothing else
+is instrumented yet.
+
 ## Before launch — what to set
 
 Everything lives in one `CONFIG` block at the top of the `<script>` in `index.html`:
