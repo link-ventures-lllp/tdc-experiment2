@@ -280,6 +280,13 @@
   .mentor-upload-note em{color:var(--blue-light);font-style:normal;}
   .form-actions{margin-top:26px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;}
   .form-note{font-family:var(--mono);font-size:11px;color:var(--white-faint);flex:1 1 220px;min-width:0;}
+  .next-step{
+    margin-top:16px;padding:12px 14px;border-radius:2px;
+    border-left:2px solid var(--blue-bright);background:rgba(27,79,160,.12);
+    font-size:13.5px;color:var(--white-dim);
+  }
+  .next-step strong{color:var(--white);font-weight:600;}
+  .next-step em{color:var(--blue-light);font-style:normal;}
   .form-status{margin-top:16px;font-family:var(--mono);font-size:12px;min-height:1.2em;color:var(--blue-light);}
   .form-status.err{color:#ff9a8a;}
 
@@ -649,8 +656,8 @@
             <!-- revealed only when "Photos, video, memorabilia" is checked -->
             <div class="mentor-panel" id="contentPanel" hidden>
               <p class="mentor-intro">
-                <strong>Bring the archive back.</strong> You&rsquo;ll upload your photos and video on
-                the next screen, right after you hit <em>Count me in</em>.
+                <strong>Bring the archive back.</strong> You&rsquo;ll get a spot to upload photos and
+                video on the next screen — optional, and skippable if you want to dig them out later.
               </p>
               <p class="mentor-upload-note">
                 Too big to upload, or a whole album? Paste a Google Drive, Dropbox, YouTube or
@@ -673,8 +680,8 @@
               </div>
 
               <p class="mentor-upload-note">
-                You&rsquo;ll attach your resume, bio or deck on the next screen, right after
-                you hit <em>Count me in</em>.
+                You&rsquo;ll get a spot to attach your resume, bio or deck on the next screen —
+                optional, and skippable if you&rsquo;d rather just talk first.
               </p>
             </div>
           </fieldset>
@@ -688,6 +695,14 @@
             <button type="submit" class="btn solid lg" id="submitBtn">Count me in</button>
             <p class="form-note">No payment here. Nothing shared outside the reboot committee.</p>
           </div>
+          <!-- Foreshadows the Typeform handoff. People abandoned it because two
+               upload screens appeared unannounced after they thought they were
+               done — and an abandoned handoff records nothing at all. -->
+          <p class="next-step">
+            <strong>One screen to go.</strong> We&rsquo;ll pass your answers straight over, then
+            offer two optional uploads — a resume and old photos. Skip either, or both.
+            Hitting <em>Submit</em> there is what files your answers.
+          </p>
           <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
         </form>
       </div>

@@ -82,40 +82,41 @@ function formDefinition(themeHref) {
     welcome_screens: [
       {
         ref: 'welcome',
-        title: 'One last step',
+        title: 'Got it — one screen to go',
         properties: {
           description:
-            "Your answers came over from the site. Confirm to send them — and if you're offering to mentor, you can attach a resume, bio or deck on the next screen.",
+            "Your name, email and interests came over from the site, so there is nothing to retype. Next are two optional uploads: a resume, then old photos. Skip either, or both — then hit Submit and you're in.",
           show_button: true,
-          button_text: 'Confirm',
+          button_text: 'Continue',
         },
       },
     ],
     fields: [
       {
         ref: 'materials',
-        title: 'Resume, bio or deck — anything that shows your work',
-        type: 'file_upload',
-        validations: { required: false },
-        properties: {
-          description: 'Mentors only — skip this if it does not apply.',
-        },
-      },
-      {
-        ref: 'media',
-        title: 'Photos, video or memorabilia',
+        title: '1 of 2 · Resume, bio or deck — optional',
         type: 'file_upload',
         validations: { required: false },
         properties: {
           description:
-            'Anything the brotherhood would want to see. Skip this if it does not apply — and if it is too big to upload, a share link in the notes works just as well.',
+            'For mentors, so we can tell founders what you could advise on. Not mentoring? Press Skip — it costs you nothing.',
+        },
+      },
+      {
+        ref: 'media',
+        title: '2 of 2 · Photos, video or memorabilia — optional',
+        type: 'file_upload',
+        validations: { required: false },
+        properties: {
+          description:
+            'Anything the brotherhood would want to see. Nothing to hand over right now? Press Skip, then Submit — that files everything from the site. Too big to upload? A share link in your notes works just as well.',
         },
       },
     ],
     thankyou_screens: [
       {
         ref: 'done',
-        title: "You're on the list.",
+        title: "You're on the list. We'll be in touch.",
         properties: {
           show_button: false,
           share_icons: false,
