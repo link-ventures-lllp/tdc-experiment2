@@ -73,6 +73,22 @@ header and footer and as the favicon), an oversized ΘΔΧ watermark behind the 
 "charge rule" divider with a pulse that travels along it. Headline face is Fraunces, with IBM
 Plex Sans/Mono for body and labels.
 
+### Link previews (unfurls)
+
+`index.html` carries Open Graph and Twitter Card tags so pasted links unfurl with a photo of the
+flag on the front of the house. The source photo is `images/TDC Flag_front of house.png`; the
+two derived JPEGs it references by absolute URL are:
+
+| File | Size | Used by |
+| --- | --- | --- |
+| `images/og-flag-1200x630.jpg` | 1200×630 | primary `og:image` and `twitter:image` (1.91:1, the standard card shape) |
+| `images/og-flag-1200x1200.jpg` | 1200×1200 | second `og:image`, for platforms that prefer a square (WhatsApp, some chat apps) |
+
+To swap the photo, regenerate both crops at the same dimensions and keep the filenames, or update
+the `og:image` / `twitter:image` URLs. Most platforms cache the first unfurl they see, so after a
+change re-scrape with the Facebook Sharing Debugger, LinkedIn Post Inspector, or by appending a
+throwaway query string to the link.
+
 ## Before launch — what to set
 
 Everything lives in one `CONFIG` block at the top of the `<script>` in `index.html`:
