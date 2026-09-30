@@ -103,6 +103,13 @@ What the page does instead:
    records the response. `onSubmit` fires, the page resets the form and shows its own
    confirmation line; closing without submitting says so rather than pretending it sent.
 
+The handoff is foreshadowed so it isn't a surprise: a note under the submit button says one
+screen follows, that the uploads on it are optional, and that pressing Submit there is what
+files the answers. The Typeform repeats it — the welcome says the details came over from the
+site with nothing to retype, and each upload is titled "1 of 2" / "2 of 2 … optional" and tells
+visitors it doesn't apply to to press Skip. People were abandoning the handoff because two
+upload screens appeared unannounced after they thought they had finished.
+
 Details worth knowing:
 
 - **The SDK is only fetched on first submit**, never on page view, so no third-party script
@@ -114,7 +121,10 @@ Details worth knowing:
   neither a URL nor a hidden field can carry a file. Typeform stores them, which also settles
   where resumes live.
 - **Anyone who closes the popup without submitting is not recorded** anywhere — the page keeps
-  no copy. Typeform's completion rate is the real conversion number.
+  no copy. Typeform's completion rate is the real conversion number. If Typeform's **partial
+  submissions** setting is available on the account's plan, turning it on captures the hidden
+  fields from people who start the handoff and abandon it — the only way to recover those
+  names.
 - **Styling inside the popup is Typeform's**, not this page's: it's a cross-origin iframe, so
   the site's CSS cannot reach in. The setup script creates a theme in the site palette
   (`#06080D` background, `#1B4FA0` buttons, `#F2F5FA` text) to keep it from looking like a
