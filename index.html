@@ -165,25 +165,6 @@
     display:flex;align-items:center;justify-content:center;
   }
   .video-frame iframe,.video-frame video{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#000;}
-  .video-frame .vwm{
-    position:absolute;font-family:var(--serif);font-weight:700;font-size:min(20vw,150px);
-    color:rgba(159,195,240,.05);user-select:none;
-  }
-  .play{
-    position:relative;z-index:2;width:clamp(64px,11vw,84px);height:clamp(64px,11vw,84px);border-radius:50%;
-    border:1px solid var(--blue-bright);background:rgba(27,79,160,.22);backdrop-filter:blur(2px);
-    display:flex;align-items:center;justify-content:center;cursor:pointer;
-    transition:transform .2s ease,background .2s ease;box-shadow:0 0 0 0 var(--blue-glow);
-    animation:haloPulse 3.4s ease-in-out infinite;
-  }
-  .play:hover{transform:scale(1.05);background:rgba(27,79,160,.45);}
-  .play svg{fill:var(--white);margin-left:4px;width:22px;height:22px;}
-  @keyframes haloPulse{0%,100%{box-shadow:0 0 0 0 rgba(76,134,217,.30);}50%{box-shadow:0 0 0 14px rgba(76,134,217,0);}}
-  .video-frame .badge{
-    position:absolute;z-index:2;bottom:12px;left:12px;
-    font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
-    color:var(--blue-light);border:1px solid var(--line);background:rgba(6,8,13,.72);padding:4px 8px;border-radius:2px;
-  }
   .video-caption{
     margin-top:12px;display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:space-between;
     font-family:var(--mono);font-size:11px;color:var(--white-faint);
@@ -411,26 +392,22 @@
       <div class="video-block">
         <!--
           ===== VIDEO =====
-          (a) Hosted embed — data-embed is the YouTube/Vimeo player URL. Params used:
-              autoplay=1        play as soon as it loads, since it loads on click
-              rel=0             no suggested videos from other channels at the end
-              cc_load_policy=0  don't force captions on (see the README: YouTube has
-                                no parameter that forces them off, so a viewer whose
-                                own YouTube setting is captions-on still sees them)
-              modestbranding=1  smaller YouTube logo in the control bar
-              youtube-nocookie.com defers YouTube's tracking cookies until play
-          (b) Self-hosted file instead — set data-src to an .mp4 in this repo and
-              clear data-embed: data-src="media/film.mp4" data-poster="media/poster.jpg"
-          Both empty leaves a branded placeholder frame.
+          A standard YouTube embed, so the player shows the video's own still frame
+          on load. Params: rel=0 keeps end-screen suggestions to this channel,
+          cc_load_policy=0 avoids forcing captions on (YouTube has no parameter that
+          forces them off — see the README), modestbranding=1 shrinks the logo.
+          youtube-nocookie.com is YouTube's privacy-enhanced host.
+          To self-host instead, replace this iframe with:
+            <video src="media/film.mp4" poster="media/poster.jpg" controls playsinline></video>
         -->
-        <div class="video-frame" id="videoFrame"
-             data-embed="https://www.youtube-nocookie.com/embed/got4YYzsbYg?autoplay=1&amp;rel=0&amp;cc_load_policy=0&amp;modestbranding=1"
-             data-src="" data-poster="">
-          <span class="vwm" aria-hidden="true">ΘΔΧ</span>
-          <button class="play" id="playBtn" aria-label="Play the film">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l14 8-14 8V4z"/></svg>
-          </button>
-          <span class="badge" id="videoBadge">Film — placeholder</span>
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/got4YYzsbYg?rel=0&amp;cc_load_policy=0&amp;modestbranding=1"
+            title="Re-charge the Charge — the film"
+            loading="lazy"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+            allowfullscreen></iframe>
         </div>
         <div class="video-caption">
           <span>The whole story, start to finish.</span>
@@ -943,44 +920,6 @@
       if(waAside) waAside.style.display = 'none';
       waCta.hidden = true;
     }
-  })();
-
-  /* ========================= VIDEO ========================= */
-  (function(){
-    const frame = document.getElementById('videoFrame');
-    const btn = document.getElementById('playBtn');
-    const badge = document.getElementById('videoBadge');
-    const embed = frame.dataset.embed;
-    const src = frame.dataset.src;
-
-    if(embed || src){ badge.textContent = 'Film'; }
-
-    btn.addEventListener('click', function(){
-      if(embed){
-        const iframe = document.createElement('iframe');
-        iframe.src = embed;
-        iframe.title = 'Re-charge the Charge — the film';
-        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture; fullscreen';
-        iframe.allowFullscreen = true;
-        frame.replaceChildren(iframe);
-        return;
-      }
-      if(src){
-        const video = document.createElement('video');
-        video.src = src;
-        video.controls = true;
-        video.autoplay = true;
-        video.playsInline = true;
-        if(frame.dataset.poster) video.poster = frame.dataset.poster;
-        frame.replaceChildren(video);
-        return;
-      }
-      badge.textContent = 'Film not attached yet';
-      btn.animate(
-        [{transform:'translateX(0)'},{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],
-        {duration:260, easing:'ease-in-out'}
-      );
-    });
   })();
 
   /* ========================= INTEREST FORM ========================= */
