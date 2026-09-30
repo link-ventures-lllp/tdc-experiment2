@@ -165,25 +165,6 @@
     display:flex;align-items:center;justify-content:center;
   }
   .video-frame iframe,.video-frame video{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#000;}
-  .video-frame .vwm{
-    position:absolute;font-family:var(--serif);font-weight:700;font-size:min(20vw,150px);
-    color:rgba(159,195,240,.05);user-select:none;
-  }
-  .play{
-    position:relative;z-index:2;width:clamp(64px,11vw,84px);height:clamp(64px,11vw,84px);border-radius:50%;
-    border:1px solid var(--blue-bright);background:rgba(27,79,160,.22);backdrop-filter:blur(2px);
-    display:flex;align-items:center;justify-content:center;cursor:pointer;
-    transition:transform .2s ease,background .2s ease;box-shadow:0 0 0 0 var(--blue-glow);
-    animation:haloPulse 3.4s ease-in-out infinite;
-  }
-  .play:hover{transform:scale(1.05);background:rgba(27,79,160,.45);}
-  .play svg{fill:var(--white);margin-left:4px;width:22px;height:22px;}
-  @keyframes haloPulse{0%,100%{box-shadow:0 0 0 0 rgba(76,134,217,.30);}50%{box-shadow:0 0 0 14px rgba(76,134,217,0);}}
-  .video-frame .badge{
-    position:absolute;z-index:2;bottom:12px;left:12px;
-    font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
-    color:var(--blue-light);border:1px solid var(--line);background:rgba(6,8,13,.72);padding:4px 8px;border-radius:2px;
-  }
   .video-caption{
     margin-top:12px;display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:space-between;
     font-family:var(--mono);font-size:11px;color:var(--white-faint);
@@ -221,6 +202,23 @@
   .soon-list li{position:relative;padding-left:20px;margin-top:9px;color:var(--white-dim);font-size:15.5px;}
   .soon-list li::before{content:'';position:absolute;left:0;top:.62em;width:8px;height:1px;background:var(--blue);}
   .soon-list li.more{color:var(--white-faint);font-style:italic;}
+
+  .entry-aside{margin-top:12px;color:var(--white-dim);max-width:60ch;font-size:15px;}
+  .entry-links{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;}
+
+  /* ---------- whatsapp cta ---------- */
+  .wa-cta{
+    margin-top:clamp(18px,3vh,28px);padding:clamp(18px,3vw,26px);
+    border:1px solid var(--line);border-radius:3px;
+    background:linear-gradient(135deg,rgba(27,79,160,.20),rgba(14,20,34,.85));
+    display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between;
+  }
+  .wa-cta[hidden]{display:none;}
+  .wa-cta-text{flex:1 1 300px;min-width:0;}
+  .wa-cta-text h3{font-size:clamp(18px,2.6vw,23px);}
+  .wa-cta-text p{margin-top:8px;color:var(--white-dim);font-size:15px;max-width:52ch;}
+  .wa-cta-btn{flex:none;}
+  .wa-cta-btn svg{fill:currentColor;}
 
   /* ---------- faq ---------- */
   .faq{margin-top:clamp(24px,4vh,36px);border-top:1px solid var(--line-soft);}
@@ -393,23 +391,26 @@
 
       <div class="video-block">
         <!--
-          ===== VIDEO: pick one =====
-          (a) Hosted embed — set data-embed to the YouTube/Vimeo player URL:
-              <div class="video-frame" id="videoFrame" data-embed="https://www.youtube.com/embed/VIDEO_ID?autoplay=1&rel=0">
-          (b) Self-hosted file — set data-src to an .mp4 in this repo:
-              <div class="video-frame" id="videoFrame" data-src="media/recharge.mp4" data-poster="media/poster.jpg">
-          Leave both empty and the frame stays a branded placeholder.
+          ===== VIDEO =====
+          A standard YouTube embed, so the player shows the video's own still frame
+          on load. Params: rel=0 keeps end-screen suggestions to this channel,
+          cc_load_policy=0 avoids forcing captions on (YouTube has no parameter that
+          forces them off — see the README), modestbranding=1 shrinks the logo.
+          youtube-nocookie.com is YouTube's privacy-enhanced host.
+          To self-host instead, replace this iframe with:
+            <video src="media/film.mp4" poster="media/poster.jpg" controls playsinline></video>
         -->
-        <div class="video-frame" id="videoFrame" data-embed="" data-src="" data-poster="">
-          <span class="vwm" aria-hidden="true">ΘΔΧ</span>
-          <button class="play" id="playBtn" aria-label="Play the film">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l14 8-14 8V4z"/></svg>
-          </button>
-          <span class="badge" id="videoBadge">Film — placeholder</span>
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/got4YYzsbYg?rel=0&amp;cc_load_policy=0&amp;modestbranding=1"
+            title="Re-charge the Charge — the film"
+            loading="lazy"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+            allowfullscreen></iframe>
         </div>
         <div class="video-caption">
           <span>The whole story, start to finish.</span>
-          <span>Final cut drops in here before launch.</span>
         </div>
       </div>
     </div>
@@ -424,7 +425,7 @@
         <span class="eyebrow">Updates</span>
         <h2>What's happened, and what's next.</h2>
         <p class="band-lede">
-          Every step of the recharge gets posted here, newest first. Nothing to sign up for yet —
+          Every step of the reboot gets posted here, newest first. Nothing to sign up for yet —
           the interest form at the bottom is how you get told first.
         </p>
       </div>
@@ -435,15 +436,25 @@
           <div class="entry-date">September 2026</div>
           <h3>This site is live — and the letter is out.</h3>
           <p>
-            A letter went out to the brotherhood laying out why we're recharging the Charge now,
+            A letter went out to the brotherhood laying out why we're rebooting the Charge now,
             what the plan looks like, and what we're asking for. This site is its companion: the film
             above tells the story, and this section is where the plan gets filled in from here.
           </p>
-          <!-- LETTER: replace href with the hosted copy of the emailed letter -->
-          <a class="entry-link" id="letterLink" href="#" target="_blank" rel="noopener">
-            Read the letter
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h7v2H7v10h10v-5h2v7H5zM14 5h5v5h-2V8.4l-6.3 6.3-1.4-1.4L15.6 7H14z"/></svg>
-          </a>
+          <p class="entry-aside">
+            There&rsquo;s also a WhatsApp group where the brotherhood is regrouping — that&rsquo;s where
+            the day-to-day conversation is happening between updates.
+          </p>
+          <div class="entry-links">
+            <!-- both hrefs are set from LETTER_URL / WHATSAPP_URL, and hide if unset -->
+            <a class="entry-link" id="letterLink" href="#" target="_blank" rel="noopener">
+              Read the letter
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h7v2H7v10h10v-5h2v7H5zM14 5h5v5h-2V8.4l-6.3 6.3-1.4-1.4L15.6 7H14z"/></svg>
+            </a>
+            <a class="entry-link" id="waLinkUpdates" href="#" target="_blank" rel="noopener">
+              Join the WhatsApp group
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 2a8 8 0 1 1-4.1 14.9l-.4-.2-2.8.7.7-2.7-.2-.4A8 8 0 0 1 12 4zm-3.2 4.3c-.2 0-.5.1-.7.3-.3.3-.8.8-.8 1.7 0 1 .7 2 .8 2.1.1.2 1.4 2.2 3.4 3 1.7.7 2.1.6 2.5.5.4 0 1.2-.5 1.4-1 .2-.5.2-.9.1-1l-.3-.2-1.4-.7c-.2 0-.3 0-.4.1l-.6.7c-.1.2-.3.2-.5.1-.2-.1-.8-.3-1.5-.9-.5-.5-.9-1-1-1.2-.1-.2 0-.3.1-.4l.4-.5.1-.4-.6-1.4c-.1-.3-.3-.3-.4-.3z"/></svg>
+            </a>
+          </div>
         </article>
 
         <article class="entry soon reveal">
@@ -470,7 +481,7 @@
         <h2>Frequently asked questions.</h2>
         <p class="band-lede">
           Where things stand at 372, in plain terms. If your question isn't here, the last
-          one says who to ask.
+          one says whom to ask.
         </p>
       </div>
 
@@ -682,10 +693,25 @@
 
           <div class="form-actions">
             <button type="submit" class="btn solid lg" id="submitBtn">Count me in</button>
-            <p class="form-note">No payment here. Nothing shared outside the recharge committee.</p>
+            <p class="form-note">No payment here. Nothing shared outside the reboot committee.</p>
           </div>
           <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
         </form>
+      </div>
+
+      <!-- hides itself when WHATSAPP_URL is empty -->
+      <div class="wa-cta reveal" id="waCta" hidden>
+        <div class="wa-cta-text">
+          <h3>Or just come say hello.</h3>
+          <p>
+            The brotherhood is regrouping in a WhatsApp group — introductions, old photos,
+            and whatever comes next. No form required.
+          </p>
+        </div>
+        <a class="btn solid lg wa-cta-btn" id="waLinkForm" href="#" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true" width="15" height="15"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 2a8 8 0 1 1-4.1 14.9l-.4-.2-2.8.7.7-2.7-.2-.4A8 8 0 0 1 12 4zm-3.2 4.3c-.2 0-.5.1-.7.3-.3.3-.8.8-.8 1.7 0 1 .7 2 .8 2.1.1.2 1.4 2.2 3.4 3 1.7.7 2.1.6 2.5.5.4 0 1.2-.5 1.4-1 .2-.5.2-.9.1-1l-.3-.2-1.4-.7c-.2 0-.3 0-.4.1l-.6.7c-.1.2-.3.2-.5.1-.2-.1-.8-.3-1.5-.9-.5-.5-.9-1-1-1.2-.1-.2 0-.3.1-.4l.4-.5.1-.4-.6-1.4c-.1-.3-.3-.3-.4-.3z"/></svg>
+          Join the WhatsApp group
+        </a>
       </div>
     </div>
   </section>
@@ -718,7 +744,11 @@
 
   // 1. Hosted copy of the emailed letter (web archive link, PDF, Google Doc, …).
   //    Leave '' and the "Read the letter" link hides itself.
-  const LETTER_URL = '';
+  const LETTER_URL = 'https://linkventures.box.com/s/bb9ulf9u3sa4vs64gz5arx65rwblow39';
+
+  // 1b. WhatsApp group invite. Leave '' and both WhatsApp calls-to-action hide
+  //     themselves, so a dead or rotated invite link never ships as a live button.
+  const WHATSAPP_URL = 'https://chat.whatsapp.com/GwO2KmQFJ7fDLM5GsGE1qi?mode=gi_t';
 
   // 2. The Typeform that collects submissions. Use the SHORT ID from the form's
   //    URL — typeform.com/to/XXXXXXXX — not the form's name.
@@ -871,49 +901,25 @@
       .catch(() => { /* keep the built-in questions */ });
   })();
 
-  /* ========================= LETTER LINK ========================= */
+  /* ========================= LETTER + WHATSAPP LINKS =========================
+     A call-to-action with no destination is worse than none, so each of these
+     hides itself unless its URL is set. */
   (function(){
     const link = document.getElementById('letterLink');
     if(LETTER_URL){ link.href = LETTER_URL; }
     else { link.style.display = 'none'; }
-  })();
 
-  /* ========================= VIDEO ========================= */
-  (function(){
-    const frame = document.getElementById('videoFrame');
-    const btn = document.getElementById('playBtn');
-    const badge = document.getElementById('videoBadge');
-    const embed = frame.dataset.embed;
-    const src = frame.dataset.src;
-
-    if(embed || src){ badge.textContent = 'Film'; }
-
-    btn.addEventListener('click', function(){
-      if(embed){
-        const iframe = document.createElement('iframe');
-        iframe.src = embed;
-        iframe.title = 'Re-charge the Charge — the film';
-        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture; fullscreen';
-        iframe.allowFullscreen = true;
-        frame.replaceChildren(iframe);
-        return;
-      }
-      if(src){
-        const video = document.createElement('video');
-        video.src = src;
-        video.controls = true;
-        video.autoplay = true;
-        video.playsInline = true;
-        if(frame.dataset.poster) video.poster = frame.dataset.poster;
-        frame.replaceChildren(video);
-        return;
-      }
-      badge.textContent = 'Film not attached yet';
-      btn.animate(
-        [{transform:'translateX(0)'},{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],
-        {duration:260, easing:'ease-in-out'}
-      );
-    });
+    const waLinks = [document.getElementById('waLinkUpdates'), document.getElementById('waLinkForm')];
+    const waCta = document.getElementById('waCta');
+    const waAside = document.querySelector('.entry-aside');
+    if(WHATSAPP_URL){
+      waLinks.forEach(a => { if(a) a.href = WHATSAPP_URL; });
+      waCta.hidden = false;
+    } else {
+      waLinks.forEach(a => { if(a) a.style.display = 'none'; });
+      if(waAside) waAside.style.display = 'none';
+      waCta.hidden = true;
+    }
   })();
 
   /* ========================= INTEREST FORM ========================= */
