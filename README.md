@@ -366,12 +366,15 @@ third-party copies of its docs and should be checked against `openclaw --help` o
 
 ## Renderings page
 
-`renderings.html` is a gallery of concept renderings with five slots. Drop images into
-`images/renderings/` named `render-01.jpg` (16:9, shown full width) through `render-05.jpg`
-(4:3). A missing file shows its slot label instead of a broken image. The page isn't linked
-from the site and is marked `noindex` (meta tag and `_headers`), but anyone with the link can
-open it. To actually restrict it, put a Cloudflare Access application on
-`tdcreboot.com/renderings*`.
+The concept-rendering gallery is unlisted: it lives at `/r/b7b51a4a7bf81a6d92bde972/`, a random path that nothing on
+the site links to, and everything under `/r/` is sent with `noindex`. Drop the images into
+`r/b7b51a4a7bf81a6d92bde972/` named `render-01.jpg` (16:9, shown full width) through `render-05.jpg` (4:3). A
+missing file shows its slot label instead of a broken image.
+
+**Unlisted is not private.** This repo and its fork are public on GitHub, so anyone browsing the
+repo can see the path and any images committed here. For real privacy, put a Cloudflare Access
+application on `tdcreboot.com/r/*` (allow specific emails, with a one-time PIN), or keep the
+images out of git.
 
 ## Preview deployments (Cloudflare Pages)
 
