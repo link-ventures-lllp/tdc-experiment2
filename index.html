@@ -3,13 +3,19 @@
 <head>
 <meta charset="UTF-8">
 
-<!-- Google Analytics 4 (measurement ID G-VLJWCH6WR1) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-VLJWCH6WR1"></script>
+<!-- Google Analytics 4 (measurement ID G-VLJWCH6WR1) — production host only, so preview
+     deployments and local copies don't count as visits -->
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-VLJWCH6WR1');
+  if (/^(www\.)?tdcreboot\.com$/.test(location.hostname)) {
+    var ga = document.createElement('script');
+    ga.async = true;
+    ga.src = 'https://www.googletagmanager.com/gtag/js?id=G-VLJWCH6WR1';
+    document.head.appendChild(ga);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function(){ dataLayer.push(arguments); };
+    gtag('js', new Date());
+    gtag('config', 'G-VLJWCH6WR1');
+  }
 </script>
 
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -252,6 +258,60 @@
   .wa-cta-btn{flex:none;}
   .wa-cta-btn svg{fill:currentColor;}
 
+  /* ---------- daily trivia ---------- */
+  /* hidden until /api/trivia returns a live question; with the API down the page is unchanged */
+  #trivia[hidden]{display:none;}
+  .trivia-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 20px;}
+  .trivia-new{
+    font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;
+    color:#fff;background:var(--blue);border:1px solid var(--blue-bright);border-radius:2px;
+    padding:3px 8px;line-height:1.2;box-shadow:0 0 0 4px rgba(76,134,217,.14);
+  }
+  .trivia-date{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--white-faint);}
+  .trivia-card{
+    margin-top:clamp(18px,3vh,26px);border:1px solid var(--blue);border-radius:3px;
+    background:linear-gradient(180deg,var(--panel),#0a0f19);
+    box-shadow:0 0 0 1px rgba(76,134,217,.12),0 18px 48px -24px rgba(27,79,160,.55);
+    padding:clamp(22px,4vw,40px);
+    display:grid;grid-template-columns:auto minmax(0,1fr);gap:clamp(14px,3vw,28px);align-items:start;
+  }
+  .trivia-mark{font-family:var(--serif);font-style:italic;font-weight:400;font-size:clamp(40px,7vw,64px);line-height:.9;color:var(--blue-bright);}
+  .trivia-card h2{font-size:clamp(22px,3.6vw,32px);line-height:1.22;margin-top:0;text-wrap:pretty;max-width:26em;}
+  .trivia-choices{
+    margin:clamp(20px,3vh,28px) 0 0;padding:0;list-style:none;
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;
+  }
+  .trivia-choice{
+    display:flex;align-items:center;gap:14px;padding:13px 16px;border-radius:2px;
+    font-size:16px;line-height:1.35;color:var(--white);
+    background:rgba(6,8,13,.45);border:1px solid var(--line);
+  }
+  .trivia-choice::before{
+    content:attr(data-letter);flex:none;width:26px;height:26px;border-radius:50%;
+    border:1px solid var(--line);display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:11.5px;color:var(--blue-light);
+  }
+  .is-revealed .trivia-choice{color:var(--white-faint);}
+  .is-revealed .trivia-choice.is-correct{color:var(--white);background:var(--blue);border-color:var(--blue-bright);}
+  .trivia-choice.is-correct::before{color:#fff;background:var(--blue-bright);border-color:var(--blue-bright);}
+  .trivia-choice.is-correct::after{
+    content:'Answer';margin-left:auto;flex:none;
+    font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#fff;
+  }
+  .trivia-foot{
+    margin-top:18px;padding-top:16px;border-top:1px solid var(--line-soft);
+    display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;justify-content:space-between;
+  }
+  .trivia-status{flex:1 1 280px;min-width:0;color:var(--white-dim);font-size:15px;max-width:48ch;}
+  .trivia-cta{flex:none;}
+  .trivia-cta svg{fill:currentColor;}
+  .trivia-cta[hidden]{display:none;}
+  .trivia-note{margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--white-faint);}
+  @media(max-width:520px){
+    .trivia-card{grid-template-columns:minmax(0,1fr);}
+    .trivia-mark{display:none;}
+  }
+
   /* ---------- faq ---------- */
   .faq{margin-top:clamp(24px,4vh,36px);border-top:1px solid var(--line-soft);}
   details{border-bottom:1px solid var(--line-soft);}
@@ -449,6 +509,33 @@
             allowfullscreen></iframe>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ========== DAILY TRIVIA ==========
+       Hidden unless the tdc-trivia Worker (see trivia-worker/) returns a live question.
+       Read-only on purpose: answering happens in the WhatsApp group. -->
+  <section class="band" id="trivia" data-cue="Trivia" hidden>
+    <div class="wrap">
+      <div class="trivia-head">
+        <span class="eyebrow">Daily trivia <span class="trivia-new">New</span></span>
+        <span class="trivia-date" id="triviaDate"></span>
+      </div>
+      <div class="trivia-card">
+        <div class="trivia-mark" aria-hidden="true">Q.</div>
+        <div>
+          <h2 id="triviaQ"></h2>
+          <ol class="trivia-choices" id="triviaChoices"></ol>
+          <div class="trivia-foot">
+            <p class="trivia-status" id="triviaStatus" aria-live="polite"></p>
+            <a class="btn solid trivia-cta" id="triviaCta" href="#" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 2a8 8 0 1 1-4.1 14.9l-.4-.2-2.8.7.7-2.7-.2-.4A8 8 0 0 1 12 4zm-3.2 4.3c-.2 0-.5.1-.7.3-.3.3-.8.8-.8 1.7 0 1 .7 2 .8 2.1.1.2 1.4 2.2 3.4 3 1.7.7 2.1.6 2.5.5.4 0 1.2-.5 1.4-1 .2-.5.2-.9.1-1l-.3-.2-1.4-.7c-.2 0-.3 0-.4.1l-.6.7c-.1.2-.3.2-.5.1-.2-.1-.8-.3-1.5-.9-.5-.5-.9-1-1-1.2-.1-.2 0-.3.1-.4l.4-.5.1-.4-.6-1.4c-.1-.3-.3-.3-.4-.3z"/></svg>
+              <span id="triviaCtaLabel">Answer in WhatsApp</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      <p class="trivia-note">New question at 7 a.m. Eastern. Answer at 8 p.m.</p>
     </div>
   </section>
 
@@ -817,6 +904,13 @@
   //    If the sheet is unreachable, the built-in questions stay on screen.
   const FAQ_SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRTtxV0VjygeLJ_sgUtqYk1H0F6qW8UoIsl1SlY2juoNTKSyG_8UQXSjbt1yr3Hflw-Ga6dqgDcgKkj/pub?gid=1571027851&single=true&output=csv';
 
+  // 3b. Daily trivia API (the tdc-trivia Worker in trivia-worker/). Absolute so
+  //     preview hosts read production's question too; the endpoint sends CORS.
+  //     Leave '' to switch the trivia section off entirely.
+  //     Add ?trivia=live or ?trivia=revealed to any page URL to see the section
+  //     with a sample question, without the API.
+  const TRIVIA_API = 'https://tdcreboot.com/api/trivia';
+
   // 4. Fallback if TYPEFORM_ID is empty: opens the visitor's mail client with
   //    their answers prefilled. Leave '' to disable and show a config notice instead.
   const MAILTO_FALLBACK = '';
@@ -956,6 +1050,66 @@
       if(waAside) waAside.style.display = 'none';
       waCta.hidden = true;
     }
+  })();
+
+  /* ========================= DAILY TRIVIA =========================
+     The Worker decides everything time-based (7 a.m. open, 8 p.m. reveal, Eastern)
+     and never sends the answer early. This only draws what it returns. Any failure
+     leaves the section hidden, so the page is exactly what it was without trivia. */
+  (function(){
+    const sec = document.getElementById('trivia');
+    if(!sec || !TRIVIA_API) return;
+    const $ = id => document.getElementById(id);
+    const RECHECK_MS = 5 * 60 * 1000;   // a tab left open picks up the 8 p.m. answer
+
+    const cta = $('triviaCta');
+    if(WHATSAPP_URL) cta.href = WHATSAPP_URL;
+    else cta.hidden = true;
+
+    function render(d){
+      const revealed = 'correctIndex' in d;
+      sec.classList.toggle('is-revealed', revealed);
+      $('triviaDate').textContent = d.dateLabel || '';
+      $('triviaQ').textContent = d.question;
+      $('triviaChoices').replaceChildren(...d.choices.map((text, i) => {
+        const li = document.createElement('li');
+        li.className = 'trivia-choice';
+        li.dataset.letter = 'ABCD'[i];
+        li.textContent = text;
+        li.classList.toggle('is-correct', revealed && i === d.correctIndex);
+        return li;
+      }));
+      $('triviaStatus').textContent = revealed
+        ? 'Answer posted. New question tomorrow at 7 a.m. Eastern.'
+        : 'Reply in the brotherhood WhatsApp group with A, B, C or D. The answer goes up there and here at 8 p.m. Eastern.';
+      $('triviaCtaLabel').textContent = revealed ? 'See it in WhatsApp' : 'Answer in WhatsApp';
+      sec.hidden = false;
+    }
+
+    // ?trivia=live | revealed — sample data for reviewing the design, no API involved
+    const demo = new URLSearchParams(location.search).get('trivia');
+    if(demo === 'live' || demo === 'revealed'){
+      const sample = {
+        live: true, dateLabel: 'Sample',
+        question: 'What year did Theta Deuteron House Corp. take title to 372 Memorial Drive?',
+        choices: ['1958', '1966', '1972', '1981']
+      };
+      if(demo === 'revealed') sample.correctIndex = 1;
+      render(sample);
+      return;
+    }
+
+    function load(){
+      fetch(TRIVIA_API, { cache: 'no-store' })
+        .then(r => r.ok ? r.json() : { live: false })
+        .then(d => {
+          if(!d.live || !d.question || !Array.isArray(d.choices)){ sec.hidden = true; return; }
+          render(d);
+          if(!('correctIndex' in d)) setTimeout(load, RECHECK_MS);
+        })
+        .catch(() => { /* stay as-is: hidden, or showing the last good question */ });
+    }
+    load();
   })();
 
   /* ========================= INTEREST FORM ========================= */

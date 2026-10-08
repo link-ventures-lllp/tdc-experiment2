@@ -1,0 +1,14 @@
+[Unit]
+Description=TDC daily trivia question, 7:00 a.m. Eastern
+
+[Timer]
+# The timezone keeps this at 7:00 Eastern across daylight saving changes.
+OnCalendar=*-*-* 07:00:00 America/New_York
+AccuracySec=1s
+Unit=tdc-trivia@question.service
+# If the instance was down at 7:00, post when it comes back (same day only:
+# the Worker returns today's question, never yesterday's).
+Persistent=true
+
+[Install]
+WantedBy=timers.target

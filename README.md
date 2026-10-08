@@ -213,10 +213,205 @@ YouTube player API goes. There is no parameter that forces captions *off* — a 
 YouTube account prefers captions still sees them, and nothing in this page can override that.
 To guarantee no captions for anyone, unpublish the caption track in YouTube Studio.
 
+## Daily trivia
+
+A question goes up each morning at 7 a.m. Eastern and the answer at 8 p.m. It appears on the
+site and is posted to the brotherhood WhatsApp group. Members answer in WhatsApp; the site only
+shows the question and links to the group.
+
+```
+Excel file in Box ──(every 30 min)──▶ tdc-trivia Worker + KV ──▶ /api/trivia      ▶ site section
+   (private)                         (holds the answer         └▶ /api/trivia/bot  ▶ OpenClaw on EC2
+                                      until 8 p.m. ET)                                ▶ WhatsApp group
+```
+
+| Time (ET) | Site | WhatsApp |
+| --- | --- | --- |
+| midnight – 7 a.m. | section hidden | — |
+| 7 a.m. – 8 p.m. | question with A–D, "Answer in WhatsApp" | bot posts the question |
+| 8 p.m. – midnight | correct choice highlighted | bot posts the answer |
+
+A day with no row in the spreadsheet shows nothing and posts nothing. If the Worker is down or
+unreachable, the site is exactly what it was before trivia existed.
+
+### The spreadsheet
+
+The first sheet of an `.xlsx` in Box, one row per day:
+
+| publish_date | question | correct_answer | wrong_answer_1 | wrong_answer_2 | wrong_answer_3 |
+| --- | --- | --- | --- | --- | --- |
+| 2026-10-09 | What year did Theta Deuteron House Corp. take title to 372 Memorial Drive? | 1966 | 1958 | 1972 | 1981 |
+
+- **Row order doesn't matter.** Rows are keyed by `publish_date`, either a date cell or text
+  like `2026-10-09`.
+- **The correct answer always goes in its own column.** The Worker shuffles the four choices
+  in an order fixed for that date, so the site and the bot show the same A–D.
+- **Today is locked at 7 a.m.** Later edits to a day that's already live are ignored, so
+  nobody's answer ends up pointing at a different question. Edits to any other day apply at the
+  next sync.
+- Headers are matched loosely: case, spaces and underscores don't matter. Rows with no date, a
+  missing answer, or a duplicate date are skipped and listed in the sync report. If no row is
+  valid, the previous schedule stays live.
+
+### Box: giving the Worker its own login
+
+The file stays private: no shared link. A Box Platform app gets a service account, and the
+file is shared with that account like any other collaborator.
+
+1. Box Developer Console → **Create Platform App** → Custom App → **Server Authentication
+   (Client Credentials Grant)**. Name it "TDC Trivia Sync".
+2. Configuration: App Access Level = **App Access Only**. Scopes: **Read all files and
+   folders**. Save.
+3. Authorization → **Review and Submit**. A Box admin approves it under Admin Console → Apps →
+   Platform Apps Manager.
+4. General Settings shows a service account address like `AutomationUser_…@boxdevedition.com`.
+   Invite it to the Excel file as **Viewer**.
+5. Collect the Client ID and Client Secret (Configuration), the Enterprise ID (General
+   Settings), and the file ID (the number at the end of the file's Box URL).
+
+### The Worker (`trivia-worker/`)
+
+The same Worker runs the sync and serves the API. It's routed at `tdcreboot.com/api/*`, so the
+site calls it on its own domain. The public endpoint also sends CORS, so preview hosts can show
+production's question.
+
+```bash
+cd trivia-worker
+npm install
+npx wrangler login
+npx wrangler kv namespace create TRIVIA_KV      # paste the id into wrangler.toml
+# also set BOX_FILE_ID in wrangler.toml
+npx wrangler secret put BOX_CLIENT_ID
+npx wrangler secret put BOX_CLIENT_SECRET
+npx wrangler secret put BOX_ENTERPRISE_ID
+npx wrangler secret put ADMIN_KEY               # long random string: openssl rand -hex 32
+npx wrangler secret put BOT_KEY                 # another one, for the EC2 bot
+npx wrangler deploy
+npm test                                        # parser, choice order, messages, DST
+```
+
+| URL | What it does |
+| --- | --- |
+| `/api/trivia` | public; today's question, plus `correctIndex` after 8 p.m. |
+| `/api/trivia/bot?what=question\|answer` | bot only (`Authorization: Bearer BOT_KEY`); ready-to-post text or `NO_REPLY` |
+| `/api/trivia/sync?key=ADMIN_KEY` | sync from Box now; returns the row count and skipped rows |
+| `/api/trivia/status?key=ADMIN_KEY` | the last sync report |
+| `/api/trivia/preview?key=ADMIN_KEY&date=2026-10-09` | any day's question with its answer |
+
+Wrong or missing keys get a 404, and an unset secret never matches. Box secrets live only in
+the Worker. They never go in `index.html` or the repo.
+
+On the site, `TRIVIA_API` in the `CONFIG` block points at the Worker; set it to `''` to switch
+trivia off. Add `?trivia=live` or `?trivia=revealed` to any page URL to see the section with a
+sample question, no API needed.
+
+### WhatsApp: OpenClaw on EC2 (`bot/`)
+
+OpenClaw keeps a WhatsApp Web session for a dedicated bot number alive on the instance. Two
+systemd timers run `bot/post.sh` at 7:00 and 20:00 Eastern. The script fetches the
+finished message from the Worker and sends it with `openclaw message send`. It sends exactly
+what the Worker returns, and no AI model is involved. `NO_REPLY` or any error means nothing is
+sent.
+
+Before you start:
+
+- **This is still WhatsApp Web.** WhatsApp's terms don't sanction automated linked sessions.
+  Two messages a day is low risk, but the number could be banned, so use a dedicated number,
+  never anyone's personal one.
+- **Keep the bot phone alive.** It needs to come online now and then or the linked session
+  drops. Leave it charging on Wi-Fi.
+- **The OpenClaw gateway must run as a service** that restarts with the instance.
+
+Setup:
+
+1. **Bot number.** A prepaid SIM in a spare phone, registered on WhatsApp as "TDC Trivia Bot".
+   A group admin adds it to the brotherhood group (as admin, if only admins can post).
+2. **Instance.** Ubuntu LTS, t3.small is plenty. Security group: SSH from your IP only; nothing
+   inbound is needed.
+3. **WhatsApp channel.** Install the OpenClaw WhatsApp plugin and merge
+   `bot/openclaw-whatsapp.json5` into the OpenClaw config, putting the admins' numbers in place
+   of `+1ADMINNUMBER`. Restart the gateway.
+4. **Link the number.** `openclaw channels login --channel whatsapp` shows a QR code. On the
+   bot phone, go to Settings → Linked devices → Link a device and scan it. The code expires
+   quickly, so scan it straight from the SSH terminal.
+5. **Group JID.** Post something in the group, then find the group's JID (it looks like
+   `120363…@g.us`) in `openclaw sessions list`.
+6. **Script.** Copy `bot/post.sh` to `/opt/tdc-trivia/`, put BOT_KEY in
+   `/opt/tdc-trivia/bot.key`, and copy `bot/env.example` to `/opt/tdc-trivia/env` with a
+   two-person **test** group's JID. `chmod 600` both, owned by the gateway user.
+7. **Timers.** Copy `bot/tdc-trivia@.service` and both `.timer` files to
+   `/etc/systemd/system/`, set `User=` in the service to the gateway user, then
+   `sudo systemctl daemon-reload && sudo systemctl enable --now tdc-trivia-question.timer tdc-trivia-answer.timer`.
+
+Testing:
+
+- `DRY_RUN=1 /opt/tdc-trivia/post.sh question` prints the message without sending.
+- `sudo systemctl start tdc-trivia@question` sends it to the test group now. Before 8 p.m.,
+  `tdc-trivia@answer` should send nothing.
+- Then set `TRIVIA_TARGET` in `/opt/tdc-trivia/env` to the brotherhood group's JID.
+- History: `journalctl -u 'tdc-trivia@*'`. Next runs: `systemctl list-timers 'tdc-trivia*'`.
+  To pause, `sudo systemctl stop tdc-trivia-question.timer tdc-trivia-answer.timer`.
+
+The OpenClaw CLI flags (`message send --target`, `channels login`, `sessions list`) come from
+third-party copies of its docs and should be checked against `openclaw --help` on the instance.
+
+## Renderings page
+
+`renderings.html` is a gallery of concept renderings with five slots. Drop images into
+`images/renderings/` named `render-01.jpg` (16:9, shown full width) through `render-05.jpg`
+(4:3). A missing file shows its slot label instead of a broken image. The page isn't linked
+from the site and is marked `noindex` (meta tag and `_headers`), but anyone with the link can
+open it. To actually restrict it, put a Cloudflare Access application on
+`tdcreboot.com/renderings*`.
+
+## Preview deployments (Cloudflare Pages)
+
+`tdcreboot.com` is served by Cloudflare. Pages publishes every non-production branch to its own
+URL, so trying a change means pushing a branch — production doesn't change until it merges to
+`main`.
+
+| URL | What it shows |
+| --- | --- |
+| `https://<hash>.<project>.pages.dev` | one exact commit; never changes, good for "look at this version" |
+| `https://preview.<project>.pages.dev` | latest commit on the `preview` branch |
+| `https://preview.tdcreboot.com` | same, on our own domain (optional, set up once below) |
+
+**Git-connected project:** `git push origin preview` builds it. In the Pages project under
+Settings → Builds → Branch control, preview deployments must be enabled for all branches or for
+`preview`. Build command: none. Output directory: `/`.
+
+**Direct-upload project** (no Git connection):
+`npx wrangler pages deploy . --project-name <project> --branch preview`
+
+**`preview.tdcreboot.com`, set up once:** Pages project → Custom domains → add
+`preview.tdcreboot.com`. Then DNS → edit its CNAME so the target is
+`preview.<project>.pages.dev`, **proxied** (orange cloud). If the record isn't proxied it serves
+production.
+
+**Keeping previews private:** Pages project → Settings → General → *Enable access policy*
+locks the `*.pages.dev` preview URLs behind Cloudflare Access. `preview.tdcreboot.com` needs its
+own Zero Trust → Access → Application for that hostname, for example allowing specific emails
+with a one-time PIN. Without one of these, anyone with a preview link can open it.
+
+What keeps a preview from interfering with production:
+
+- **`_headers`** sends `X-Robots-Tag: noindex` on every `*.pages.dev` host and on
+  `preview.tdcreboot.com`, so search engines don't index a preview. Production gets no extra
+  header.
+- **Analytics only loads on `tdcreboot.com` / `www.tdcreboot.com`**, so preview and local visits
+  don't count in GA.
+- The Typeform and the FAQ sheet are the **live** ones. A test submission from a preview shows up
+  as a real response, so delete it in Typeform afterwards.
+- Trivia reads production's Worker (`TRIVIA_API`). Before that Worker is deployed, the section
+  stays hidden; use `?trivia=live` or `?trivia=revealed` to review it.
+- `og:url` and `og:image` point at the production domain. A preview link pasted into a chat
+  unfurls with production's card.
+
 ## Notes
 
-- Single self-contained `index.html`; no build step, no dependencies. Drop it on GitHub Pages
-  (Settings → Pages → deploy from `main` / root) or any static host.
+- The site is still a self-contained `index.html` (plus `renderings.html`), with no build step
+  and no dependencies. `trivia-worker/` deploys separately with Wrangler, and `bot/` goes on the
+  EC2 instance. Neither is part of the static site.
 - Verified rendering at 1280px and 390px, no horizontal overflow. Exercised in Chromium: form
   validation, the mentor panel's reveal/hide, the popup handoff (all six hidden fields arrive
   correctly encoded, including the normalized LinkedIn URL), submit vs. close-without-submit,

@@ -1,0 +1,21 @@
+# Cloudflare Pages response headers. Production (tdcreboot.com) gets none of these;
+# they keep every preview URL out of search results.
+
+# Default project domain and per-branch / per-commit preview URLs
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex
+
+# Workers projects: branch preview URLs (<branch>-<worker>.<account>.workers.dev)
+https://:alias.:account.workers.dev/*
+  X-Robots-Tag: noindex
+
+# Custom domain bound to the `preview` branch
+https://preview.tdcreboot.com/*
+  X-Robots-Tag: noindex
+
+# The renderings page isn't linked from the site and shouldn't be indexed anywhere
+/renderings*
+  X-Robots-Tag: noindex, nofollow, noarchive

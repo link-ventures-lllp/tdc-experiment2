@@ -1,0 +1,13 @@
+// Merge into the OpenClaw config (~/.openclaw/openclaw.json) on the EC2 instance.
+// Only the admin numbers listed here can talk to the bot. Members' replies in the
+// group are ignored, so nobody's A/B/C/D guess triggers an AI reply.
+{
+  channels: {
+    whatsapp: {
+      dmPolicy: "allowlist",
+      allowFrom: ["+1ADMINNUMBER"],
+      groupPolicy: "allowlist",
+      groupAllowFrom: ["+1ADMINNUMBER"],
+    },
+  },
+}

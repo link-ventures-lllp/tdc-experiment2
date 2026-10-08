@@ -1,0 +1,21 @@
+name = "tdc-trivia"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+# The site calls https://tdcreboot.com/api/trivia, so it works from production, from
+# preview.tdcreboot.com, and from *.pages.dev previews (the public endpoint sends CORS).
+routes = [{ pattern = "tdcreboot.com/api/*", zone_name = "tdcreboot.com" }]
+
+[triggers]
+crons = ["*/30 * * * *"]        # Box sync every 30 minutes
+
+[vars]
+BOX_FILE_ID = "REPLACE_WITH_BOX_FILE_ID"
+SITE_URL = "https://tdcreboot.com/#trivia"
+
+[[kv_namespaces]]
+binding = "TRIVIA_KV"
+id = "REPLACE_WITH_ID_FROM_kv_namespace_create"
+
+# Secrets — set with `npx wrangler secret put <NAME>`, never written here:
+#   BOX_CLIENT_ID, BOX_CLIENT_SECRET, BOX_ENTERPRISE_ID, ADMIN_KEY, BOT_KEY
