@@ -10,3 +10,4 @@ trivia-worker
 bot
 node_modules
 .wrangler
+site-worker

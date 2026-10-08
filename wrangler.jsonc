@@ -1,13 +1,22 @@
-// The tdcreboot Worker: serves this repo as static assets, no Worker code.
+// The tdcreboot Worker: serves this repo as static assets. Its only code
+// (site-worker/index.js) passes /r/* to the tdc-trivia Worker for the renderings
+// gallery; every other path is served straight from the assets.
 // Production builds from `main`; every other branch builds a Preview through
-// `npx wrangler preview`, which requires the `previews` block (empty is fine).
+// `npx wrangler preview`. Previews don't inherit bindings, so the service binding
+// is repeated under `previews`.
 // Custom domains are managed in the Cloudflare dashboard, not here.
 {
   "name": "tdcreboot",
   "account_id": "c3bc0fd03fb182c04403dd9a907056af",   // Link Ventures
   "compatibility_date": "2026-10-01",
+  "main": "site-worker/index.js",
   "assets": {
-    "directory": "."
+    "directory": ".",
+    "binding": "ASSETS",
+    "run_worker_first": ["/r/*"]
   },
-  "previews": {}
+  "services": [{ "binding": "TRIVIA", "service": "tdc-trivia" }],
+  "previews": {
+    "services": [{ "binding": "TRIVIA", "service": "tdc-trivia" }]
+  }
 }

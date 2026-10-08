@@ -392,6 +392,10 @@ the address isn't in git either. Any other `/r/` URL returns 404, and every resp
   the trivia spreadsheet.
 - **New link:** `npx wrangler secret put RENDERINGS_PATH --config wrangler.toml` with a new
   random value (`openssl rand -hex 16`). The old link stops working immediately.
+- **Same gallery on the preview site.** The site Worker (`site-worker/index.js`) hands `/r/*`
+  to `tdc-trivia` over a service binding, so
+  `preview-tdcreboot.link-ventures.workers.dev/r/<RENDERINGS_PATH>/` shows the same images
+  from the same Box copy.
 - **Unlisted, not private:** anyone who has the link can open it. For sign-in protection, add
   a Cloudflare Access application on `tdcreboot.com/r/*`.
 
