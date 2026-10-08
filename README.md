@@ -275,20 +275,25 @@ The same Worker runs the sync and serves the API. It's routed at `tdcreboot.com/
 site calls it on its own domain. The public endpoint also sends CORS, so preview hosts can show
 production's question.
 
+**Always pass `--config wrangler.toml`** (the npm scripts already do). Wrangler otherwise
+picks up the site's `wrangler.jsonc` at the repo root, even from inside `trivia-worker/`, and
+deploys *this checkout* over the production site. The configs pin the Link Ventures account,
+since the Cloudflare login can see several.
+
 ```bash
 cd trivia-worker
 npm install
 npx wrangler login
-npx wrangler kv namespace create TRIVIA_KV      # paste the id into wrangler.toml
-# also set BOX_FILE_ID in wrangler.toml
-npx wrangler secret put BOX_CLIENT_ID
-npx wrangler secret put BOX_CLIENT_SECRET
-npx wrangler secret put BOX_ENTERPRISE_ID
-npx wrangler secret put ADMIN_KEY               # long random string: openssl rand -hex 32
-npx wrangler secret put BOT_KEY                 # another one, for the EC2 bot
-npx wrangler deploy
+# KV namespace already created; its id is in wrangler.toml. Set BOX_FILE_ID there.
+npx wrangler secret put BOX_CLIENT_ID      --config wrangler.toml
+npx wrangler secret put BOX_CLIENT_SECRET  --config wrangler.toml
+npx wrangler secret put BOX_ENTERPRISE_ID  --config wrangler.toml
+npm run deploy
 npm test                                        # parser, choice order, messages, DST
 ```
+
+`ADMIN_KEY` and `BOT_KEY` are already set on the Worker; copies are in
+`~/.config/tdc-trivia/keys.env` on the machine that deployed it.
 
 | URL | What it does |
 | --- | --- |

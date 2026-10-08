@@ -1,5 +1,6 @@
 name = "tdc-trivia"
 main = "src/index.js"
+account_id = "c3bc0fd03fb182c04403dd9a907056af"   # Link Ventures
 compatibility_date = "2026-10-01"
 
 # The site calls https://tdcreboot.com/api/trivia, so it works from production, from
@@ -15,7 +16,7 @@ SITE_URL = "https://tdcreboot.com/#trivia"
 
 [[kv_namespaces]]
 binding = "TRIVIA_KV"
-id = "REPLACE_WITH_ID_FROM_kv_namespace_create"
+id = "6e5b4200696942fab9efc35d99b2a1d1"
 
 # Secrets — set with `npx wrangler secret put <NAME>`, never written here:
 #   BOX_CLIENT_ID, BOX_CLIENT_SECRET, BOX_ENTERPRISE_ID, ADMIN_KEY, BOT_KEY

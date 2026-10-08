@@ -4,6 +4,7 @@
 // Custom domains are managed in the Cloudflare dashboard, not here.
 {
   "name": "tdcreboot",
+  "account_id": "c3bc0fd03fb182c04403dd9a907056af",   // Link Ventures
   "compatibility_date": "2026-10-01",
   "assets": {
     "directory": "."
