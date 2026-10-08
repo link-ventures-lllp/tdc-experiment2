@@ -307,7 +307,7 @@ npm test                                        # parser, choice order, messages
 | Path (on the Worker's host) | What it does |
 | --- | --- |
 | `/api/trivia` | public; today's question, plus `correctIndex` after 8 p.m. |
-| `/api/trivia/bot?what=poll\|answer\|question` | bot only (`Authorization: Bearer BOT_KEY`): `poll` is the poll question then one option per line; `answer` and `question` are ready-to-post text. `NO_REPLY` when there's nothing to post |
+| `/api/trivia/bot?what=poll\|answer\|question` | bot only (`Authorization: Bearer BOT_KEY`): `poll` is the poll question then one option per line; `answer` and `question` are ready-to-post text. `NO_REPLY` when there's nothing to post. Add `&date=YYYY-MM-DD` for test mode: that day's message right away, prefixed `[TEST]` |
 | `/api/trivia/sync?key=ADMIN_KEY` | sync from Box now; returns the row count and skipped rows |
 | `/api/trivia/status?key=ADMIN_KEY` | the last sync report |
 | `/api/trivia/preview?key=ADMIN_KEY&date=2026-10-09` | any day's question with its answer |
@@ -320,6 +320,10 @@ trivia off. Add `?trivia=live` or `?trivia=revealed` to any page URL to see the 
 sample question, no API needed.
 
 ### WhatsApp: OpenClaw on EC2 (`bot/`)
+
+**Installing it?** Follow [`bot/SETUP.md`](bot/SETUP.md): step-by-step instructions written for
+an OpenClaw agent, with a test mode (`TRIVIA_TEST_DATE=2026-10-12 post.sh question`) that
+posts any day's question to a test group marked `[TEST]`. The summary below is background.
 
 OpenClaw keeps a WhatsApp Web session for a dedicated bot number alive on the instance. Two
 systemd timers run `bot/post.sh` at 7:00 and 20:00 Eastern. At 7:00 the script fetches the

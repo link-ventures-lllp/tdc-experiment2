@@ -86,11 +86,23 @@ export default {
     if (url.pathname === '/api/trivia/bot'){
       const auth = req.headers.get('Authorization') || '';
       if (!matches(auth.replace(/^Bearer /, ''), env.BOT_KEY)) return notFound();
+      const what = url.searchParams.get('what');
+
+      // Test mode: ?date=YYYY-MM-DD returns that day's message right away, ignoring
+      // the clock and never locking, marked [TEST] so it can't pass for a real post.
+      const testDate = url.searchParams.get('date');
+      if (testDate){
+        const item = /^\d{4}-\d{2}-\d{2}$/.test(testDate) ? await itemFor(env, testDate, false) : null;
+        if (!item) return text('NO_REPLY');
+        if (what === 'answer') return text('[TEST] ' + answerText(testDate, item, env.SITE_URL));
+        if (what === 'poll') return text('[TEST] ' + pollLines(testDate, item));
+        return text('[TEST] ' + questionText(testDate, item));
+      }
+
       const { date, minutes } = nowET();
       if (minutes < OPEN) return text('NO_REPLY');
       const item = await itemFor(env, date, true);
       if (!item) return text('NO_REPLY');
-      const what = url.searchParams.get('what');
       if (what === 'answer') return text(minutes >= REVEAL ? answerText(date, item, env.SITE_URL) : 'NO_REPLY');
       if (what === 'poll') return text(pollLines(date, item));
       return text(questionText(date, item));

@@ -1,36 +1,49 @@
 #!/bin/sh
-# Posts today's trivia to the WhatsApp group via OpenClaw.
+# Posts today's trivia to the WhatsApp group via OpenClaw. See bot/SETUP.md.
 #   post.sh question   7 a.m.: the question as a single-choice WhatsApp poll (A-D)
 #   post.sh answer     8 p.m.: the answer as a text message
-#   DRY_RUN=1 post.sh question   prints what would be sent, sends nothing
+#   post.sh auto       for an hourly cron: question at 7, answer at 20 (Eastern), else nothing
+#
+#   DRY_RUN=1 post.sh question                  print what would be sent, send nothing
+#   TRIVIA_TEST_DATE=2026-10-12 post.sh question  post that day's poll now, marked [TEST]
 #
 # The tdc-trivia Worker writes the whole message; this script never edits it and no
 # AI model is involved. The Worker answers NO_REPLY when there's nothing to post
 # (no row today, before 7 a.m., or an answer request before 8 p.m.).
 #
-# Reads /opt/tdc-trivia/env:  TRIVIA_TARGET  group JID, e.g. 120363…@g.us
-#                             OPENCLAW       path to the openclaw binary (optional)
-# and the bot key from /opt/tdc-trivia/bot.key (chmod 600).
+# Settings, from the environment (e.g. a secrets manager) or /opt/tdc-trivia/env:
+#   TRIVIA_TARGET    WhatsApp group JID, e.g. 120363…@g.us  (required)
+#   TRIVIA_BOT_KEY   the Worker's BOT_KEY  (or put it in /opt/tdc-trivia/bot.key, chmod 600)
+#   OPENCLAW         path to the openclaw binary, if it isn't on PATH
 set -eu
 
 WHAT=${1:-}
+if [ "$WHAT" = auto ]; then
+  case "$(TZ=America/New_York date +%H)" in
+    07) WHAT=question ;;
+    20) WHAT=answer ;;
+    *)  exit 0 ;;
+  esac
+fi
 case "$WHAT" in
   question) FETCH=poll ;;
   answer)   FETCH=answer ;;
-  *) echo "usage: $0 question|answer" >&2; exit 2 ;;
+  *) echo "usage: $0 question|answer|auto" >&2; exit 2 ;;
 esac
 
 DIR=${TRIVIA_DIR:-/opt/tdc-trivia}
-. "$DIR/env"
-: "${TRIVIA_TARGET:?set TRIVIA_TARGET in $DIR/env}"
+if [ -f "$DIR/env" ]; then . "$DIR/env"; fi
+: "${TRIVIA_TARGET:?set TRIVIA_TARGET (environment or $DIR/env)}"
 OPENCLAW=${OPENCLAW:-openclaw}
 API=${TRIVIA_BOT_API:-https://tdcreboot.com/api/trivia/bot}
-KEY=$(cat "$DIR/bot.key")
+KEY=${TRIVIA_BOT_KEY:-$(cat "$DIR/bot.key")}
+QUERY="what=$FETCH"
+if [ -n "${TRIVIA_TEST_DATE:-}" ]; then QUERY="$QUERY&date=$TRIVIA_TEST_DATE"; fi
 
 # Any failure here exits non-zero before anything is sent, so an error page can
 # never end up in the group. systemd records the failure in the journal.
 TEXT=$(curl -fsS --max-time 20 --retry 3 --retry-delay 10 \
-  -H "Authorization: Bearer $KEY" "$API?what=$FETCH")
+  -H "Authorization: Bearer $KEY" "$API?$QUERY")
 
 if [ -z "$TEXT" ] || [ "$TEXT" = "NO_REPLY" ]; then
   echo "nothing to post ($WHAT)"
