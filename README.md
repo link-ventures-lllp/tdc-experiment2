@@ -275,9 +275,15 @@ file is shared with that account like any other collaborator.
 
 ### The Worker (`trivia-worker/`)
 
-The same Worker runs the sync and serves the API. It's routed at `tdcreboot.com/api/*`, so the
-site calls it on its own domain. The public endpoint also sends CORS, so preview hosts can show
-production's question.
+The same Worker runs the sync and serves the API. **Until launch it is only at
+`https://tdc-trivia.link-ventures.workers.dev`**; nothing on tdcreboot.com reaches it. The
+public endpoint sends CORS, so the preview site can read it from there.
+
+**At launch:** uncomment the `routes` line in `trivia-worker/wrangler.toml` and run
+`npm run deploy`, then set `TRIVIA_API` in `index.html` to `https://tdcreboot.com/api/trivia`
+and `API` in `bot/post.sh` to `https://tdcreboot.com/api/trivia/bot`. If you're taking the
+route back off later, delete it in the dashboard (zone → Workers Routes); removing it from
+the config doesn't remove it from Cloudflare.
 
 **Always pass `--config wrangler.toml`** (the npm scripts already do). Wrangler otherwise
 picks up the site's `wrangler.jsonc` at the repo root, even from inside `trivia-worker/`, and
@@ -299,7 +305,7 @@ npm test                                        # parser, choice order, messages
 `ADMIN_KEY` and `BOT_KEY` are already set on the Worker; copies are in
 `~/.config/tdc-trivia/keys.env` on the machine that deployed it.
 
-| URL | What it does |
+| Path (on the Worker's host) | What it does |
 | --- | --- |
 | `/api/trivia` | public; today's question, plus `correctIndex` after 8 p.m. |
 | `/api/trivia/bot?what=question\|answer` | bot only (`Authorization: Bearer BOT_KEY`); ready-to-post text or `NO_REPLY` |

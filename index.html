@@ -904,12 +904,13 @@
   //    If the sheet is unreachable, the built-in questions stay on screen.
   const FAQ_SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRTtxV0VjygeLJ_sgUtqYk1H0F6qW8UoIsl1SlY2juoNTKSyG_8UQXSjbt1yr3Hflw-Ga6dqgDcgKkj/pub?gid=1571027851&single=true&output=csv';
 
-  // 3b. Daily trivia API (the tdc-trivia Worker in trivia-worker/). Absolute so
-  //     preview hosts read production's question too; the endpoint sends CORS.
+  // 3b. Daily trivia API (the tdc-trivia Worker in trivia-worker/). It sends CORS,
+  //     so any host can read it. Pre-launch it lives on workers.dev only; at launch
+  //     this becomes 'https://tdcreboot.com/api/trivia' (see the README).
   //     Leave '' to switch the trivia section off entirely.
   //     Add ?trivia=live or ?trivia=revealed to any page URL to see the section
   //     with a sample question, without the API.
-  const TRIVIA_API = 'https://tdcreboot.com/api/trivia';
+  const TRIVIA_API = 'https://tdc-trivia.link-ventures.workers.dev/api/trivia';
 
   // 4. Fallback if TYPEFORM_ID is empty: opens the visitor's mail client with
   //    their answers prefilled. Leave '' to disable and show a config notice instead.
