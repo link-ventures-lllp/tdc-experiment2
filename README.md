@@ -376,15 +376,24 @@ third-party copies of its docs and should be checked against `openclaw --help` o
 
 ## Renderings page
 
-The concept-rendering gallery is unlisted: it lives at `/r/b7b51a4a7bf81a6d92bde972/`, a random path that nothing on
-the site links to, and everything under `/r/` is sent with `noindex`. Drop the images into
-`r/b7b51a4a7bf81a6d92bde972/` named `render-01.jpg` (16:9, shown full width) through `render-05.jpg` (4:3). A
-missing file shows its slot label instead of a broken image.
+The concept-rendering gallery is **not in this repo**. The `tdc-trivia` Worker copies every
+image in a private Box folder (`RENDERINGS_FOLDER_ID`, currently `425175450083`) into
+Cloudflare KV on its 30-minute schedule. It serves the page and the images at
+`tdcreboot.com/r/<RENDERINGS_PATH>/`, where `RENDERINGS_PATH` is a random Worker secret, so
+the address isn't in git either. Any other `/r/` URL returns 404, and every response is
+`noindex`.
 
-**Unlisted is not private.** This repo and its fork are public on GitHub, so anyone browsing the
-repo can see the path and any images committed here. For real privacy, put a Cloudflare Access
-application on `tdcreboot.com/r/*` (allow specific emails, with a one-time PIN), or keep the
-images out of git.
+- **Updating it:** add, replace, rename or delete images in the Box folder. Changes show up
+  within 30 minutes, or right away after
+  `/api/renderings/sync?key=ADMIN_KEY` (which reports images, downloads and removals). Images
+  are sorted by filename; the first is shown full width, and the filename (minus extension)
+  is the caption. JPG, PNG, WebP and GIF up to 25 MB each.
+- **The Box service account must be a collaborator on the folder**, the same way it is on
+  the trivia spreadsheet.
+- **New link:** `npx wrangler secret put RENDERINGS_PATH --config wrangler.toml` with a new
+  random value (`openssl rand -hex 16`). The old link stops working immediately.
+- **Unlisted, not private:** anyone who has the link can open it. For sign-in protection, add
+  a Cloudflare Access application on `tdcreboot.com/r/*`.
 
 ## Preview deployments (Cloudflare Pages)
 

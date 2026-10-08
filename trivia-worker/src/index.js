@@ -2,6 +2,7 @@
 // today's question at /api/trivia (site) and /api/trivia/bot (WhatsApp bot).
 // The correct answer never leaves this Worker before 8 p.m. Eastern.
 import { OPEN, REVEAL, nowET, label, parseWorkbook, withChoices, questionText, pollLines, answerText } from './trivia.js';
+import { syncRenderings, serveRenderings } from './renderings.js';
 
 /* ---------- Box ---------- */
 async function boxToken(env){
@@ -66,12 +67,15 @@ const CORS = { 'Access-Control-Allow-Origin': '*' };
 export default {
   async scheduled(event, env, ctx){
     try { await sync(env); } catch (e) { console.error('sync failed', e.message); }
+    try { await syncRenderings(env, await boxToken(env)); } catch (e) { console.error('renderings sync failed', e.message); }
     const { date, minutes } = nowET();
     if (minutes >= OPEN) await itemFor(env, date, true);
   },
 
   async fetch(req, env){
     const url = new URL(req.url);
+
+    if (url.pathname.startsWith('/r/')) return serveRenderings(req, env, matches);
 
     if (url.pathname === '/api/trivia'){
       const { date, minutes } = nowET();
@@ -112,6 +116,8 @@ export default {
 
     if (url.pathname === '/api/trivia/sync')
       return json(await sync(env, true).catch(e => ({ error: e.message })), 200, 'no-store');
+    if (url.pathname === '/api/renderings/sync')
+      return json(await boxToken(env).then(t => syncRenderings(env, t)).catch(e => ({ error: e.message })), 200, 'no-store');
     if (url.pathname === '/api/trivia/status')
       return json(await env.TRIVIA_KV.get('sync:last', 'json') || {}, 200, 'no-store');
     if (url.pathname === '/api/trivia/preview'){

@@ -6,7 +6,10 @@ compatibility_date = "2026-10-01"
 # The API is live at tdcreboot.com/api/* (the bot and the site use that), and also at
 # tdc-trivia.link-ventures.workers.dev. Removing `routes` here does NOT remove the route
 # from Cloudflare; delete it in the dashboard (zone -> Workers Routes) instead.
-routes = [{ pattern = "tdcreboot.com/api/*", zone_name = "tdcreboot.com" }]
+routes = [
+  { pattern = "tdcreboot.com/api/*", zone_name = "tdcreboot.com" },
+  { pattern = "tdcreboot.com/r/*", zone_name = "tdcreboot.com" },   # renderings gallery
+]
 workers_dev = true
 preview_urls = false
 
@@ -16,10 +19,12 @@ crons = ["*/30 * * * *"]        # Box sync every 30 minutes
 [vars]
 BOX_FILE_ID = "2513830681297"
 SITE_URL = "https://tdcreboot.com/#trivia"
+RENDERINGS_FOLDER_ID = "425175450083"   # Box folder the gallery is copied from
 
 [[kv_namespaces]]
 binding = "TRIVIA_KV"
 id = "6e5b4200696942fab9efc35d99b2a1d1"
 
 # Secrets — set with `npx wrangler secret put <NAME>`, never written here:
-#   BOX_CLIENT_ID, BOX_CLIENT_SECRET, BOX_ENTERPRISE_ID, ADMIN_KEY, BOT_KEY
+#   BOX_CLIENT_ID, BOX_CLIENT_SECRET, BOX_ENTERPRISE_ID, ADMIN_KEY, BOT_KEY,
+#   RENDERINGS_PATH (the random segment in tdcreboot.com/r/<RENDERINGS_PATH>/)
