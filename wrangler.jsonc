@@ -1,0 +1,12 @@
+// The tdcreboot Worker: serves this repo as static assets, no Worker code.
+// Production builds from `main`; every other branch builds a Preview through
+// `npx wrangler preview`, which requires the `previews` block (empty is fine).
+// Custom domains are managed in the Cloudflare dashboard, not here.
+{
+  "name": "tdcreboot",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "."
+  },
+  "previews": {}
+}

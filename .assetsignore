@@ -1,0 +1,12 @@
+# Repo files that aren't part of the site. Without this, the whole checkout is public.
+.git
+.github
+.gitignore
+wrangler.jsonc
+README.md
+faq-template.csv
+setup
+trivia-worker
+bot
+node_modules
+.wrangler
