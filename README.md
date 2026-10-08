@@ -275,15 +275,12 @@ file is shared with that account like any other collaborator.
 
 ### The Worker (`trivia-worker/`)
 
-The same Worker runs the sync and serves the API. **Until launch it is only at
-`https://tdc-trivia.link-ventures.workers.dev`**; nothing on tdcreboot.com reaches it. The
-public endpoint sends CORS, so the preview site can read it from there.
-
-**At launch:** uncomment the `routes` line in `trivia-worker/wrangler.toml` and run
-`npm run deploy`, then set `TRIVIA_API` in `index.html` to `https://tdcreboot.com/api/trivia`
-and `API` in `bot/post.sh` to `https://tdcreboot.com/api/trivia/bot`. If you're taking the
-route back off later, delete it in the dashboard (zone → Workers Routes); removing it from
-the config doesn't remove it from Cloudflare.
+The same Worker runs the sync and serves the API, at `tdcreboot.com/api/*` (also reachable at
+`tdc-trivia.link-ventures.workers.dev`). The public endpoint sends CORS, so preview hosts show
+the same question as production. The production page only gains the trivia section when the
+`preview` branch merges; until then the API is live but nothing on tdcreboot.com displays it.
+To take the API off the domain, delete the route in the dashboard (zone → Workers Routes):
+removing `routes` from the config doesn't remove it from Cloudflare.
 
 **Always pass `--config wrangler.toml`** (the npm scripts already do). Wrangler otherwise
 picks up the site's `wrangler.jsonc` at the repo root, even from inside `trivia-worker/`, and

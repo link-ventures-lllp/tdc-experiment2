@@ -3,9 +3,10 @@ main = "src/index.js"
 account_id = "c3bc0fd03fb182c04403dd9a907056af"   # Link Ventures
 compatibility_date = "2026-10-01"
 
-# Preview phase: served only at https://tdc-trivia.link-ventures.workers.dev, nothing on
-# tdcreboot.com. At launch, add the production route and switch TRIVIA_API in index.html:
-#   routes = [{ pattern = "tdcreboot.com/api/*", zone_name = "tdcreboot.com" }]
+# The API is live at tdcreboot.com/api/* (the bot and the site use that), and also at
+# tdc-trivia.link-ventures.workers.dev. Removing `routes` here does NOT remove the route
+# from Cloudflare; delete it in the dashboard (zone -> Workers Routes) instead.
+routes = [{ pattern = "tdcreboot.com/api/*", zone_name = "tdcreboot.com" }]
 workers_dev = true
 preview_urls = false
 

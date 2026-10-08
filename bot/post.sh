@@ -19,7 +19,7 @@ DIR=${TRIVIA_DIR:-/opt/tdc-trivia}
 . "$DIR/env"
 : "${TRIVIA_TARGET:?set TRIVIA_TARGET in $DIR/env}"
 OPENCLAW=${OPENCLAW:-openclaw}
-API=${TRIVIA_BOT_API:-https://tdc-trivia.link-ventures.workers.dev/api/trivia/bot}
+API=${TRIVIA_BOT_API:-https://tdcreboot.com/api/trivia/bot}
 KEY=$(cat "$DIR/bot.key")
 
 # Any failure here exits non-zero before anything is sent, so an error page can
