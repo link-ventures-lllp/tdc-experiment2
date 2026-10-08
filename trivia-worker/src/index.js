@@ -24,7 +24,7 @@ async function sync(env, force = false){
   const file = await fetch('https://api.box.com/2.0/files/' + env.BOX_FILE_ID + '/content', { headers: h });
   if (!file.ok) throw new Error('box download ' + file.status);
   const { schedule, skipped, rows } = parseWorkbook(new Uint8Array(await file.arrayBuffer()));
-  if (!rows) throw new Error('no valid rows; keeping previous schedule');
+  if (!rows) throw new Error('no valid rows; keeping previous schedule. ' + skipped.slice(0, 3).join('; '));
 
   await env.TRIVIA_KV.put('schedule', JSON.stringify(schedule));
   await env.TRIVIA_KV.put('file:sha1', info.sha1);

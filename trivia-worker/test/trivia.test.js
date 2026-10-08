@@ -13,6 +13,8 @@ test('dates: serial numbers, ISO text and US text all land on the same day', () 
   assert.equal(toISO(46304), '2026-10-09');        // Excel serial for 2026-10-09
   assert.equal(toISO('2026-10-09'), '2026-10-09');
   assert.equal(toISO('10/9/2026'), '2026-10-09');
+  assert.equal(toISO('12-Oct-26'), '2026-10-12');
+  assert.equal(toISO('2 Mar 2027'), '2027-03-02');
   assert.equal(toISO(''), '');
 });
 
@@ -35,7 +37,7 @@ test('parse: loose headers, real date cells, skips and duplicates', () => {
   assert.equal(skipped.length, 3);
   assert.match(skipped[0], /row 4 .*duplicate/);
   assert.match(skipped[1], /row 5 .*missing/);
-  assert.match(skipped[2], /row 7: no publish_date/);
+  assert.match(skipped[2], /row 7: no date/);
 });
 
 test('choices: stable per date, correctIndex points at the right answer', () => {
@@ -59,4 +61,32 @@ test('clock: Eastern time across DST', () => {
   assert.deepEqual(nowET(new Date('2026-10-09T11:00:00Z')), { date: '2026-10-09', minutes: 7 * 60 });  // EDT
   assert.deepEqual(nowET(new Date('2026-12-09T12:00:00Z')), { date: '2026-12-09', minutes: 7 * 60 });  // EST
   assert.deepEqual(nowET(new Date('2026-10-10T03:59:00Z')), { date: '2026-10-09', minutes: 23 * 60 + 59 });
+});
+
+test('parse: title row, empty first column, Incorrect answer headers, extra columns and sheets', () => {
+  const ws = XLSX.utils.aoa_to_sheet([
+    ['Trivia'],
+    [],
+    ['', 'Date', 'Question', 'Correct answer', 'Incorrect answer 1', 'Incorrect answer 2', 'Incorrect answer 3', 'Source file(s)'],
+    ['', new Date(2026, 9, 12), 'Street address in 1964?', '314 Memorial Drive', '372 Memorial Drive', '528 Beacon Street', '84 Massachusetts Avenue', '1964 Rush Book'],
+    ['', '13-Oct-26', 'Address from 1979?', '372 Memorial Drive', '314 Memorial Drive', '259 St. Paul Street', '3 Ames Street', '1979 Rush Book']
+  ], { cellDates: true });
+  const notes = XLSX.utils.aoa_to_sheet([['Notes'], ['142 questions…']]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Trivia');
+  XLSX.utils.book_append_sheet(wb, notes, 'Notes');
+  const { schedule, skipped, rows } = parseWorkbook(new Uint8Array(XLSX.write(wb, { type: 'array', bookType: 'xlsx' })));
+  assert.deepEqual(skipped, []);
+  assert.equal(rows, 2);
+  assert.deepEqual(schedule['2026-10-12'], { q: 'Street address in 1964?', correct: '314 Memorial Drive',
+    wrong: ['372 Memorial Drive', '528 Beacon Street', '84 Massachusetts Avenue'] });
+  assert.equal(schedule['2026-10-13'].correct, '372 Memorial Drive');
+});
+
+test('parse: a workbook with no question table reports why', () => {
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Notes']]), 'Notes');
+  const out = parseWorkbook(new Uint8Array(XLSX.write(wb, { type: 'array', bookType: 'xlsx' })));
+  assert.equal(out.rows, 0);
+  assert.match(out.skipped[0], /Question/);
 });

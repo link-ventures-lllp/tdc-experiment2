@@ -25,6 +25,8 @@ const pad = n => String(n).padStart(2, '0');
 
 // Date cells arrive as Excel serial numbers (cellDates is off on purpose: a JS Date
 // built from a serial can land a day early depending on the runtime's timezone).
+// Text dates are accepted as 2026-10-12, 10/12/2026, or 12-Oct-26 / 12 Oct 2026.
+const MONTHS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
 export function toISO(v){
   if (typeof v === 'number' && v > 0){
     const d = XLSX.SSF.parse_date_code(v);
@@ -35,27 +37,59 @@ export function toISO(v){
   if (m) return m[1] + '-' + pad(m[2]) + '-' + pad(m[3]);
   m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (m) return m[3] + '-' + pad(m[1]) + '-' + pad(m[2]);
+  m = s.match(/^(\d{1,2})[-\s]([A-Za-z]{3})[A-Za-z]*[-\s,]+(\d{2}|\d{4})$/);
+  if (m && MONTHS.includes(m[2].toLowerCase())){
+    const y = m[3].length === 2 ? '20' + m[3] : m[3];
+    return y + '-' + pad(MONTHS.indexOf(m[2].toLowerCase()) + 1) + '-' + pad(m[1]);
+  }
   return '';
+}
+
+// Header names, compared after lowercasing and dropping spaces and punctuation.
+const DATE_COLS = ['publishdate', 'date'];
+const CORRECT_COLS = ['correctanswer', 'correct', 'answer'];
+const isWrong = k => /^(wrong|incorrect)/.test(k);
+
+// The header row is the first row (in the first 20) with a "question" cell, so a
+// title row above the table or an empty first column doesn't matter. The first
+// sheet that has one is used; other sheets (notes, etc.) are ignored.
+function findTable(wb){
+  for (const name of wb.SheetNames){
+    const grid = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, defval: '', raw: true, blankrows: true });
+    for (let r = 0; r < Math.min(grid.length, 20); r++){
+      const keys = grid[r].map(norm);
+      if (keys.includes('question')) return { grid, headerRow: r, keys };
+    }
+  }
+  return null;
 }
 
 export function parseWorkbook(buf){
   const wb = XLSX.read(buf, { type: 'array' });
-  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '', raw: true });
   const schedule = {}, skipped = [];
-  rows.forEach(raw => {
-    const r = {}; for (const k in raw) r[norm(k)] = raw[k];
-    const date = toISO(r.publishdate);
-    const q = String(r.question ?? '').trim();
-    const correct = String(r.correctanswer ?? r.correct ?? '').trim();
-    const wrong = Object.keys(r).filter(k => k.startsWith('wrong')).sort()
-      .map(k => String(r[k]).trim()).filter(Boolean).slice(0, 3);
-    const line = 'row ' + (raw.__rowNum__ + 1);                // sheet row, blank rows included
-    if (!date && !q) return;                                   // blank row
-    if (!date) return skipped.push(line + ': no publish_date');
-    if (!q || !correct || wrong.length < 3) return skipped.push(line + ' (' + date + '): missing question or answers');
-    if (schedule[date]) return skipped.push(line + ' (' + date + '): duplicate date');
+  const table = findTable(wb);
+  if (!table) return { schedule, skipped: ['no sheet has a "Question" header'], rows: 0 };
+
+  const { grid, headerRow, keys } = table;
+  const col = names => keys.findIndex(k => names.includes(k));
+  const cDate = col(DATE_COLS), cQ = keys.indexOf('question'), cCorrect = col(CORRECT_COLS);
+  const cWrong = keys.map((k, i) => isWrong(k) ? i : -1).filter(i => i >= 0).slice(0, 3);
+  if (cDate < 0 || cCorrect < 0 || cWrong.length < 3)
+    return { schedule, skipped: ['header row ' + (headerRow + 1) + ' needs Date, Correct answer and three Incorrect/Wrong answer columns'], rows: 0 };
+
+  for (let r = headerRow + 1; r < grid.length; r++){
+    const row = grid[r];
+    const date = toISO(row[cDate]);
+    const q = String(row[cQ] ?? '').trim();
+    const correct = String(row[cCorrect] ?? '').trim();
+    const wrong = cWrong.map(i => String(row[i] ?? '').trim()).filter(Boolean);
+    const line = 'row ' + (r + 1);
+    if (!date && !q) continue;                                 // blank row
+    if (!date) { skipped.push(line + ': no date'); continue; }
+    if (!q || !correct || wrong.length < 3) { skipped.push(line + ' (' + date + '): missing question or answers'); continue; }
+    if (schedule[date]) { skipped.push(line + ' (' + date + '): duplicate date'); continue; }
     schedule[date] = { q, correct, wrong };
-  });
+  }
   return { schedule, skipped, rows: Object.keys(schedule).length };
 }
 

@@ -11,7 +11,7 @@ routes = [{ pattern = "tdcreboot.com/api/*", zone_name = "tdcreboot.com" }]
 crons = ["*/30 * * * *"]        # Box sync every 30 minutes
 
 [vars]
-BOX_FILE_ID = "REPLACE_WITH_BOX_FILE_ID"
+BOX_FILE_ID = "2513830681297"
 SITE_URL = "https://tdcreboot.com/#trivia"
 
 [[kv_namespaces]]

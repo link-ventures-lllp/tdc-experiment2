@@ -236,22 +236,26 @@ unreachable, the site is exactly what it was before trivia existed.
 
 ### The spreadsheet
 
-The first sheet of an `.xlsx` in Box, one row per day:
+`TDC_Rush_Book_Trivia_dbase1.xlsx` in Box (file ID `2513830681297`, kept by Román Cepeda),
+one row per day:
 
-| publish_date | question | correct_answer | wrong_answer_1 | wrong_answer_2 | wrong_answer_3 |
-| --- | --- | --- | --- | --- | --- |
-| 2026-10-09 | What year did Theta Deuteron House Corp. take title to 372 Memorial Drive? | 1966 | 1958 | 1972 | 1981 |
+| Date | Question | Correct answer | Incorrect answer 1 | Incorrect answer 2 | Incorrect answer 3 | Source file(s) |
+| --- | --- | --- | --- | --- | --- | --- |
+| 12-Oct-26 | In the 1964 rush book, what was the chapter's street address? | 314 Memorial Drive | 372 Memorial Drive | 528 Beacon Street | 84 Massachusetts Avenue | 1964 Rush Book |
 
-- **Row order doesn't matter.** Rows are keyed by `publish_date`, either a date cell or text
-  like `2026-10-09`.
+- **The layout is flexible.** The Worker uses the first sheet with a *Question* header within
+  its first 20 rows, so title rows, an empty first column, extra columns like *Source file(s)*,
+  and other sheets like *Notes* are all fine. Headers are matched loosely: *Date* or
+  *publish_date*, *Correct answer*, and *Incorrect answer 1–3* or *wrong_answer_1–3*.
+- **Dates:** a date cell, or text like `12-Oct-26`, `2026-10-12` or `10/12/2026`. Row order
+  doesn't matter.
 - **The correct answer always goes in its own column.** The Worker shuffles the four choices
   in an order fixed for that date, so the site and the bot show the same A–D.
 - **Today is locked at 7 a.m.** Later edits to a day that's already live are ignored, so
   nobody's answer ends up pointing at a different question. Edits to any other day apply at the
-  next sync.
-- Headers are matched loosely: case, spaces and underscores don't matter. Rows with no date, a
-  missing answer, or a duplicate date are skipped and listed in the sync report. If no row is
-  valid, the previous schedule stays live.
+  next sync, within 30 minutes.
+- Rows with no date, a missing answer, or a duplicate date are skipped and listed in the sync
+  report (`/api/trivia/status`). If no row is valid, the previous schedule stays live.
 
 ### Box: giving the Worker its own login
 
