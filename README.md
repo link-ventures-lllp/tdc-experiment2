@@ -216,8 +216,10 @@ To guarantee no captions for anyone, unpublish the caption track in YouTube Stud
 ## Daily trivia
 
 A question goes up each morning at 7 a.m. Eastern and the answer at 8 p.m. It appears on the
-site and is posted to the brotherhood WhatsApp group. Members answer in WhatsApp; the site only
-shows the question and links to the group.
+site and is posted to the brotherhood WhatsApp group as a single-choice **poll** (A–D, same
+order as the site). Members vote in WhatsApp; the site only shows the question and links to
+the group. WhatsApp polls have no "correct answer" mode, so the 8 p.m. text post reveals it.
+Everyone in the group can see who voted for what.
 
 ```
 Excel file in Box ──(every 30 min)──▶ tdc-trivia Worker + KV ──▶ /api/trivia      ▶ site section
@@ -228,7 +230,7 @@ Excel file in Box ──(every 30 min)──▶ tdc-trivia Worker + KV ──▶
 | Time (ET) | Site | WhatsApp |
 | --- | --- | --- |
 | midnight – 7 a.m. | section hidden | — |
-| 7 a.m. – 8 p.m. | question with A–D, "Answer in WhatsApp" | bot posts the question |
+| 7 a.m. – 8 p.m. | question with A–D, "Vote in WhatsApp" | bot posts the question as a poll |
 | 8 p.m. – midnight | correct choice highlighted | bot posts the answer |
 
 A day with no row in the spreadsheet shows nothing and posts nothing. If the Worker is down or
@@ -305,7 +307,7 @@ npm test                                        # parser, choice order, messages
 | Path (on the Worker's host) | What it does |
 | --- | --- |
 | `/api/trivia` | public; today's question, plus `correctIndex` after 8 p.m. |
-| `/api/trivia/bot?what=question\|answer` | bot only (`Authorization: Bearer BOT_KEY`); ready-to-post text or `NO_REPLY` |
+| `/api/trivia/bot?what=poll\|answer\|question` | bot only (`Authorization: Bearer BOT_KEY`): `poll` is the poll question then one option per line; `answer` and `question` are ready-to-post text. `NO_REPLY` when there's nothing to post |
 | `/api/trivia/sync?key=ADMIN_KEY` | sync from Box now; returns the row count and skipped rows |
 | `/api/trivia/status?key=ADMIN_KEY` | the last sync report |
 | `/api/trivia/preview?key=ADMIN_KEY&date=2026-10-09` | any day's question with its answer |
@@ -320,8 +322,9 @@ sample question, no API needed.
 ### WhatsApp: OpenClaw on EC2 (`bot/`)
 
 OpenClaw keeps a WhatsApp Web session for a dedicated bot number alive on the instance. Two
-systemd timers run `bot/post.sh` at 7:00 and 20:00 Eastern. The script fetches the
-finished message from the Worker and sends it with `openclaw message send`. It sends exactly
+systemd timers run `bot/post.sh` at 7:00 and 20:00 Eastern. At 7:00 the script fetches the
+poll from the Worker and posts it with `openclaw message poll` (single choice). At 20:00 it
+posts the answer with `openclaw message send`. It sends exactly
 what the Worker returns, and no AI model is involved. `NO_REPLY` or any error means nothing is
 sent.
 
@@ -364,7 +367,7 @@ Testing:
 - History: `journalctl -u 'tdc-trivia@*'`. Next runs: `systemctl list-timers 'tdc-trivia*'`.
   To pause, `sudo systemctl stop tdc-trivia-question.timer tdc-trivia-answer.timer`.
 
-The OpenClaw CLI flags (`message send --target`, `channels login`, `sessions list`) come from
+The OpenClaw CLI flags (`message poll --poll-question/--poll-option`, `message send --target`, `channels login`, `sessions list`) come from
 third-party copies of its docs and should be checked against `openclaw --help` on the instance.
 
 ## Renderings page

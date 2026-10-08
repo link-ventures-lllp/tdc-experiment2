@@ -116,6 +116,15 @@ export function questionText(date, item){
   return ['*ΘΔΧ Daily Trivia · ' + label(date) + '*', '', item.question, '', ...lettered(item), '',
     'Reply with A, B, C or D. Answer at 8 p.m.'].join('\n');
 }
+// WhatsApp poll, as plain lines so the bot script needs no JSON parser:
+// line 1 is the poll question, lines 2-5 the options in the site's A-D order.
+// Cells can hold line breaks; a poll field can't, so they collapse to spaces.
+const oneLine = s => String(s).replace(/\s+/g, ' ').trim();
+export function pollLines(date, item){
+  return [oneLine('ΘΔΧ Daily Trivia · ' + label(date) + ': ' + item.question),
+    ...lettered(item).map(oneLine)].join('\n');
+}
+
 export function answerText(date, item, siteUrl){
   const lines = ['*ΘΔΧ Daily Trivia answer · ' + label(date) + '*', '', item.question, '',
     'Answer: *' + lettered(item)[item.correctIndex] + '*', '', 'New question tomorrow at 7 a.m.'];

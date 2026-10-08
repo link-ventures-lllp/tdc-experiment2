@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as XLSX from 'xlsx';
-import { nowET, toISO, parseWorkbook, withChoices, questionText, answerText } from '../src/trivia.js';
+import { nowET, toISO, parseWorkbook, withChoices, questionText, pollLines, answerText } from '../src/trivia.js';
 
 function workbook(rows){
   const wb = XLSX.utils.book_new();
@@ -89,4 +89,12 @@ test('parse: a workbook with no question table reports why', () => {
   const out = parseWorkbook(new Uint8Array(XLSX.write(wb, { type: 'array', bookType: 'xlsx' })));
   assert.equal(out.rows, 0);
   assert.match(out.skipped[0], /Question/);
+});
+
+test('poll: one line per field, options in A-D order, line breaks collapsed', () => {
+  const item = { question: 'Which\nhouse band?', choices: ['Shifty', 'Resin  ', 'About Face', 'Not\nTonight'], correctIndex: 1 };
+  assert.deepEqual(pollLines('2026-10-12', item).split('\n'), [
+    'ΘΔΧ Daily Trivia · Mon, Oct 12: Which house band?',
+    'A. Shifty', 'B. Resin', 'C. About Face', 'D. Not Tonight'
+  ]);
 });

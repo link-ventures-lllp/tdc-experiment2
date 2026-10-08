@@ -1,7 +1,7 @@
 // tdc-trivia: syncs the private Box spreadsheet into KV on a schedule and serves
 // today's question at /api/trivia (site) and /api/trivia/bot (WhatsApp bot).
 // The correct answer never leaves this Worker before 8 p.m. Eastern.
-import { OPEN, REVEAL, nowET, label, parseWorkbook, withChoices, questionText, answerText } from './trivia.js';
+import { OPEN, REVEAL, nowET, label, parseWorkbook, withChoices, questionText, pollLines, answerText } from './trivia.js';
 
 /* ---------- Box ---------- */
 async function boxToken(env){
@@ -90,8 +90,9 @@ export default {
       if (minutes < OPEN) return text('NO_REPLY');
       const item = await itemFor(env, date, true);
       if (!item) return text('NO_REPLY');
-      if (url.searchParams.get('what') === 'answer')
-        return text(minutes >= REVEAL ? answerText(date, item, env.SITE_URL) : 'NO_REPLY');
+      const what = url.searchParams.get('what');
+      if (what === 'answer') return text(minutes >= REVEAL ? answerText(date, item, env.SITE_URL) : 'NO_REPLY');
+      if (what === 'poll') return text(pollLines(date, item));
       return text(questionText(date, item));
     }
 
