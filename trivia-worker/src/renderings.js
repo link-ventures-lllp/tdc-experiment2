@@ -83,6 +83,9 @@ function figure(f, lazy){
   return `<figure><div class="frame"><img src="img/${f.sha1}.${f.ext}" alt="Concept rendering: ${title}"${lazy ? ' loading="lazy"' : ''} decoding="async"></div><figcaption>${title}</figcaption></figure>`;
 }
 
+// 3D walkthrough of the house as it is today, before renovation.
+const TOUR_URL = 'https://discover.matterport.com/space/q3cx6jvxxrt';
+
 const CREST = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="crest" viewBox="0 0 48 56"><path class="crest-fill" d="M3 3h42v29c0 9.5-9.4 14.2-21 21C12.4 46.2 3 41.5 3 32z"/><path class="crest-outline" d="M3 3h42v29c0 9.5-9.4 14.2-21 21C12.4 46.2 3 41.5 3 32z"/><path class="crest-outline" d="M3 15h42" style="stroke-width:1.2;opacity:.55"/><text class="crest-letters" x="24" y="32" font-size="13.5" text-anchor="middle">ΘΔΧ</text><path class="crest-bolt" d="M25.6 36.5l-5.6 7.6h3.4l-.7 5 5.9-7.9h-3.9z"/></symbol></svg>`;
 
 export function galleryHtml(manifest){
@@ -134,6 +137,14 @@ export function galleryHtml(manifest){
   .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--blue-light);display:flex;align-items:center;gap:9px;}
   .eyebrow::before{content:'';width:22px;height:1px;background:var(--blue);flex:none;}
   .lede{margin-top:16px;max-width:58ch;color:var(--white-dim);font-size:clamp(15px,1.9vw,17px);}
+  .tour{
+    display:inline-flex;align-items:center;gap:9px;margin-top:22px;
+    font-family:var(--mono);font-size:12px;letter-spacing:.09em;text-transform:uppercase;
+    padding:12px 18px;border:1px solid var(--blue);border-radius:2px;color:var(--blue-light);
+    transition:background .2s ease,color .2s ease;
+  }
+  .tour:hover{background:var(--blue);color:#fff;}
+  .tour svg{width:13px;height:13px;fill:currentColor;flex:none;}
   .gallery{padding-bottom:clamp(64px,10vh,110px);}
   .gallery .wrap{display:flex;flex-direction:column;gap:clamp(20px,3vw,32px);}
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:clamp(20px,3vw,32px);}
@@ -170,6 +181,7 @@ ${CREST}
       <span class="eyebrow">Renderings · 372 Memorial Drive</span>
       <h1>The house, <em>re-imagined.</em></h1>
       <p class="lede">Early concept renderings of the renovation. These are directions, not final designs. Please don&rsquo;t share this link beyond the brotherhood.</p>
+      <a class="tour" href="${TOUR_URL}" target="_blank" rel="noopener">See 372 as she currently stands <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h7v2H7v10h10v-5h2v7H5zM14 5h5v5h-2V8.4l-6.3 6.3-1.4-1.4L15.6 7H14z"/></svg></a>
     </div>
   </section>
   <section class="gallery"><div class="wrap">${body}</div></section>

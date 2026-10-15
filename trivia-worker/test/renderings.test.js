@@ -11,6 +11,7 @@ test('gallery: first image leads, captions from filenames, names escaped', () =>
   assert.match(html, /Pub &lt;script&gt;/);
   assert.doesNotMatch(html, /Pub <script>/);
   assert.match(html, /noindex/);
+  assert.match(html, /<a class="tour" href="https:\/\/discover\.matterport\.com\/space\/q3cx6jvxxrt" target="_blank" rel="noopener">See 372 as she currently stands/);
 });
 
 test('gallery: empty folder shows a placeholder line', () => {
