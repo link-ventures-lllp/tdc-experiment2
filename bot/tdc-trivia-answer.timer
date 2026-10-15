@@ -1,0 +1,11 @@
+[Unit]
+Description=TDC daily trivia answer, 8:00 p.m. Eastern
+
+[Timer]
+OnCalendar=*-*-* 20:00:00 America/New_York
+AccuracySec=1s
+Unit=tdc-trivia@answer.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target

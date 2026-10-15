@@ -1,0 +1,12 @@
+# One-shot post of the trivia question or answer. %i is "question" or "answer".
+# Install to /etc/systemd/system/. Runs as the user that owns the OpenClaw gateway,
+# so `openclaw message send` reaches the linked WhatsApp session.
+[Unit]
+Description=TDC daily trivia: post %i to WhatsApp
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+ExecStart=/opt/tdc-trivia/post.sh %i
