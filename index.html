@@ -1053,14 +1053,13 @@
   })();
 
   /* ========================= DAILY TRIVIA =========================
-     The Worker decides everything time-based (7 a.m. open, 8 p.m. reveal, Eastern)
-     and never sends the answer early. This only draws what it returns. Any failure
-     leaves the section hidden, so the page is exactly what it was without trivia. */
+     Owner-approved answered October 20 round, verified through the existing
+     Box-backed date helper. Keep this display until the next manual website
+     update; do not advance with the shared API’s daily clock. */
   (function(){
     const sec = document.getElementById('trivia');
     if(!sec || !TRIVIA_API) return;
     const $ = id => document.getElementById(id);
-    const RECHECK_MS = 5 * 60 * 1000;   // a tab left open picks up the 8 p.m. answer
 
     const cta = $('triviaCta');
     if(WHATSAPP_URL) cta.href = WHATSAPP_URL;
@@ -1080,7 +1079,7 @@
         return li;
       }));
       $('triviaStatus').textContent = revealed
-        ? 'Answer posted. Stay tuned for the next trivia question.'
+        ? 'Stay tuned for the next trivia question.'
         : 'Vote in today\u2019s poll in the brotherhood WhatsApp group. The answer goes up there and here at 8 p.m. Eastern.';
       $('triviaCtaLabel').textContent = revealed ? 'See it in WhatsApp' : 'Vote in WhatsApp';
       sec.hidden = false;
@@ -1099,17 +1098,21 @@
       return;
     }
 
-    function load(){
-      fetch(TRIVIA_API, { cache: 'no-store' })
-        .then(r => r.ok ? r.json() : { live: false })
-        .then(d => {
-          if(!d.live || !d.question || !Array.isArray(d.choices)){ sec.hidden = true; return; }
-          render(d);
-          if(!('correctIndex' in d)) setTimeout(load, RECHECK_MS);
-        })
-        .catch(() => { /* stay as-is: hidden, or showing the last good question */ });
-    }
-    load();
+    // Published answered content only: no credentials, votes, or future rounds.
+    const answeredRound = {
+      "date": "2026-10-20",
+      "question": "What happens at the annual Smash Party?",
+      "choices": [
+        "A pie-throwing contest at Wellesley",
+        "Brothers destroy a car with sledgehammers and pikes after finals",
+        "Brothers smash pumpkins off the roof",
+        "A demolition derby on Memorial Drive"
+      ],
+      "correctIndex": 1,
+      "live": true,
+      "dateLabel": "Tue, Oct 20"
+    };
+    render(answeredRound);
   })();
 
   /* ========================= INTEREST FORM ========================= */
