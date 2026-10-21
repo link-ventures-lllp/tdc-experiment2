@@ -31,41 +31,45 @@ async function renderTrivia(search, response) {
   return { elements, timers, fetches };
 }
 
-const sample = { live: true, question: 'Question?', choices: ['A', 'B', 'C', 'D'], correctIndex: 1 };
-const posted = 'Answer posted. Stay tuned for the next trivia question.';
+const sample = { live: true, question: 'Unrelated next-day round', choices: ['A', 'B', 'C', 'D'], correctIndex: 0 };
+const posted = 'Stay tuned for the next trivia question.';
 const voting = 'Vote in today’s poll in the brotherhood WhatsApp group. The answer goes up there and here at 8 p.m. Eastern.';
 
-for (const [name, search] of [['normal API', ''], ['existing revealed demo', '?trivia=revealed']]) {
-  test(`${name}: post-reveal copy and correct answer are preserved`, async () => {
-    const { elements, timers, fetches } = await renderTrivia(search, sample);
+for (const nextRound of [sample, { live: false }, undefined]) {
+  test(`normal site stays pinned regardless of shared API state ${JSON.stringify(nextRound)}`, async () => {
+    const { elements, timers, fetches } = await renderTrivia('', nextRound);
     assert.equal(elements.get('triviaStatus').textContent, posted);
+    assert.equal(elements.get('triviaDate').textContent, 'Tue, Oct 20');
+    assert.equal(elements.get('triviaQ').textContent, 'What happens at the annual Smash Party?');
+    assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.textContent), [
+      'A pie-throwing contest at Wellesley',
+      'Brothers destroy a car with sledgehammers and pikes after finals',
+      'Brothers smash pumpkins off the roof',
+      'A demolition derby on Memorial Drive'
+    ]);
+    assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.toggles['is-correct']), [false, true, false, false]);
     assert.equal(elements.get('trivia').hidden, false);
     assert.equal(elements.get('trivia').toggles['is-revealed'], true);
-    assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.toggles['is-correct']), [false, true, false, false]);
     assert.equal(elements.get('triviaCtaLabel').textContent, 'See it in WhatsApp');
-    assert.equal(fetches, search ? 0 : 1);
+    assert.equal(fetches, 0);
     assert.equal(timers.length, 0);
   });
 }
 
-test('pre-reveal copy, answer withholding and recheck interval are unchanged', async () => {
-  const { correctIndex, ...unrevealed } = sample;
-  const { elements, timers } = await renderTrivia('', unrevealed);
+test('existing revealed demo remains explicitly labeled Sample', async () => {
+  const { elements, fetches, timers } = await renderTrivia('?trivia=revealed');
+  assert.equal(elements.get('triviaDate').textContent, 'Sample');
+  assert.equal(elements.get('triviaStatus').textContent, posted);
+  assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.toggles['is-correct']), [false, true, false, false]);
+  assert.equal(fetches, 0);
+  assert.equal(timers.length, 0);
+});
+
+test('existing live demo remains Sample and withholds answer highlight', async () => {
+  const { elements, fetches } = await renderTrivia('?trivia=live');
+  assert.equal(elements.get('triviaDate').textContent, 'Sample');
   assert.equal(elements.get('triviaStatus').textContent, voting);
   assert.equal(elements.get('trivia').toggles['is-revealed'], false);
   assert.ok(elements.get('triviaChoices').children.every(e => !e.toggles['is-correct']));
-  assert.equal(elements.get('triviaCtaLabel').textContent, 'Vote in WhatsApp');
-  assert.deepEqual(timers, [5 * 60 * 1000]);
-});
-
-test('existing live demo bypasses API and remains unrevealed', async () => {
-  const { elements, fetches } = await renderTrivia('?trivia=live');
-  assert.equal(elements.get('triviaStatus').textContent, voting);
-  assert.equal(elements.get('trivia').toggles['is-revealed'], false);
   assert.equal(fetches, 0);
-});
-
-test('inactive API round stays hidden', async () => {
-  const { elements } = await renderTrivia('', { live: false });
-  assert.equal(elements.get('trivia').hidden, true);
 });
