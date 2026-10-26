@@ -38,19 +38,14 @@ const voting = 'Vote in today’s poll in the brotherhood WhatsApp group. The an
 for (const nextRound of [sample, { live: false }, undefined]) {
   test(`normal site stays pinned regardless of shared API state ${JSON.stringify(nextRound)}`, async () => {
     const { elements, timers, fetches } = await renderTrivia('', nextRound);
-    assert.equal(elements.get('triviaStatus').textContent, posted);
-    assert.equal(elements.get('triviaDate').textContent, 'Tue, Oct 20');
-    assert.equal(elements.get('triviaQ').textContent, 'What happens at the annual Smash Party?');
-    assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.textContent), [
-      'A pie-throwing contest at Wellesley',
-      'Brothers destroy a car with sledgehammers and pikes after finals',
-      'Brothers smash pumpkins off the roof',
-      'A demolition derby on Memorial Drive'
-    ]);
-    assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.toggles['is-correct']), [false, true, false, false]);
+    assert.equal(elements.get('triviaStatus').textContent, voting);
+    assert.equal(elements.get('triviaDate').textContent, 'Tue, Oct 27');
+    assert.equal(elements.get('triviaQ').textContent, "In what year did the chapter acquire the former dean's mansion?");
+    assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.textContent), ["1979", "1982", "1947", "1966"]);
+    assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.toggles['is-correct']), [false, false, false, false]);
     assert.equal(elements.get('trivia').hidden, false);
-    assert.equal(elements.get('trivia').toggles['is-revealed'], true);
-    assert.equal(elements.get('triviaCtaLabel').textContent, 'See it in WhatsApp');
+    assert.equal(elements.get('trivia').toggles['is-revealed'], false);
+    assert.equal(elements.get('triviaCtaLabel').textContent, 'Vote in WhatsApp');
     assert.equal(fetches, 0);
     assert.equal(timers.length, 0);
   });
@@ -72,4 +67,13 @@ test('existing live demo remains Sample and withholds answer highlight', async (
   assert.equal(elements.get('trivia').toggles['is-revealed'], false);
   assert.ok(elements.get('triviaChoices').children.every(e => !e.toggles['is-correct']));
   assert.equal(fetches, 0);
+});
+
+test('October 27 public round has no answer key or automatic reveal path', () => {
+  const payload = JSON.parse(html.match(/const questionRound = (\{[\s\S]*?\});/)[1]);
+  assert.equal(payload.date, '2026-10-27');
+  assert.deepEqual(Object.keys(payload).sort(), ['choices', 'date', 'dateLabel', 'live', 'question']);
+  assert.ok(!('correctIndex' in payload));
+  assert.ok(!html.includes('const answeredRound'));
+  assert.ok(html.includes('Trivia Tuesdays — New question at 7 a.m. Eastern. Answer at 8 p.m.'));
 });

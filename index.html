@@ -1053,9 +1053,9 @@
   })();
 
   /* ========================= DAILY TRIVIA =========================
-     Owner-approved answered October 20 round, verified through the existing
+     Owner-requested question-open October 27 round, verified through the existing
      Box-backed date helper. Keep this display until the next manual website
-     update; do not advance with the shared API’s daily clock. */
+     update; do not advance or reveal with the shared API’s daily clock. */
   (function(){
     const sec = document.getElementById('trivia');
     if(!sec || !TRIVIA_API) return;
@@ -1098,21 +1098,20 @@
       return;
     }
 
-    // Published answered content only: no credentials, votes, or future rounds.
-    const answeredRound = {
-      "date": "2026-10-20",
-      "question": "What happens at the annual Smash Party?",
+    // Question-only October 27 preview: private answer key is never shipped.
+    const questionRound = {
+      "date": "2026-10-27",
+      "question": "In what year did the chapter acquire the former dean's mansion?",
       "choices": [
-        "A pie-throwing contest at Wellesley",
-        "Brothers destroy a car with sledgehammers and pikes after finals",
-        "Brothers smash pumpkins off the roof",
-        "A demolition derby on Memorial Drive"
+        "1979",
+        "1982",
+        "1947",
+        "1966"
       ],
-      "correctIndex": 1,
       "live": true,
-      "dateLabel": "Tue, Oct 20"
+      "dateLabel": "Tue, Oct 27"
     };
-    render(answeredRound);
+    render(questionRound);
   })();
 
   /* ========================= INTEREST FORM ========================= */
