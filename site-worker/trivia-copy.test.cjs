@@ -40,8 +40,8 @@ for (const nextRound of [sample, { live: false }, undefined]) {
     const { elements, timers, fetches } = await renderTrivia('', nextRound);
     assert.equal(elements.get('triviaStatus').textContent, voting);
     assert.equal(elements.get('triviaDate').textContent, 'Tue, Oct 27');
-    assert.equal(elements.get('triviaQ').textContent, "In what year did the chapter acquire the former dean's mansion?");
-    assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.textContent), ["1979", "1982", "1947", "1966"]);
+    assert.equal(elements.get('triviaQ').textContent, "What architectural boast appears in the house section of the 1990s books?");
+    assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.textContent), ["The only fraternity with a moat", "The only fraternity with an elevator", "The only fraternity with windows on all four sides", "The tallest fraternity on Memorial Drive"]);
     assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.toggles['is-correct']), [false, false, false, false]);
     assert.equal(elements.get('trivia').hidden, false);
     assert.equal(elements.get('trivia').toggles['is-revealed'], false);
