@@ -1053,7 +1053,7 @@
   })();
 
   /* ========================= DAILY TRIVIA =========================
-     Owner-requested question-open October 27 round, verified through the existing
+     Owner-requested October 27 round, verified through the existing
      Box-backed date helper. Keep this display until the next manual website
      update; do not advance or reveal with the shared API’s daily clock. */
   (function(){
@@ -1098,7 +1098,7 @@
       return;
     }
 
-    // Question-only October 27 preview: private answer key is never shipped.
+    // Verified October 27 question; reveal simulation is restricted to preview below.
     const questionRound = {
       "date": "2026-10-27",
       "question": "What architectural boast appears in the house section of the 1990s books?",
@@ -1111,6 +1111,11 @@
       "live": true,
       "dateLabel": "Tue, Oct 27"
     };
+    // Preview-only simulation; this is not a timed or production publication.
+    if(location.hostname === 'preview-tdcreboot.link-ventures.workers.dev'){
+      questionRound.correctIndex = 2;
+      questionRound.dateLabel = 'Simulated preview — Tue, Oct 27, 8 p.m. Eastern (Oct 28, 00:00 UTC)';
+    }
     render(questionRound);
   })();
 

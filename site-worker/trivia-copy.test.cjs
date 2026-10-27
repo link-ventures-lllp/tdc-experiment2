@@ -7,7 +7,7 @@ const html = readFileSync(require('node:path').join(__dirname, '../index.html'),
 const script = '/*' + html.split('/* ========================= DAILY TRIVIA =========================')[1]
   .split('/* ========================= INTEREST FORM =========================')[0];
 
-async function renderTrivia(search, response) {
+async function renderTrivia(search, response, hostname = 'tdcreboot.com') {
   const elements = new Map();
   const element = () => ({
     hidden: true, textContent: '', dataset: {}, toggles: {},
@@ -23,7 +23,7 @@ async function renderTrivia(search, response) {
       createElement: makeElement
     },
     TRIVIA_API: 'https://example.invalid/api/trivia', WHATSAPP_URL: 'https://example.invalid/group',
-    location: { search }, URLSearchParams,
+    location: { search, hostname }, URLSearchParams,
     fetch: async () => { fetches++; return { ok: true, json: async () => response }; },
     setTimeout: (_fn, ms) => timers.push(ms)
   });
@@ -69,11 +69,30 @@ test('existing live demo remains Sample and withholds answer highlight', async (
   assert.equal(fetches, 0);
 });
 
-test('October 27 public round has no answer key or automatic reveal path', () => {
+test('October 27 question payload has no key; preview simulation is hostname gated, not timed', () => {
   const payload = JSON.parse(html.match(/const questionRound = (\{[\s\S]*?\});/)[1]);
   assert.equal(payload.date, '2026-10-27');
   assert.deepEqual(Object.keys(payload).sort(), ['choices', 'date', 'dateLabel', 'live', 'question']);
   assert.ok(!('correctIndex' in payload));
   assert.ok(!html.includes('const answeredRound'));
+  assert.ok(html.includes("location.hostname === 'preview-tdcreboot.link-ventures.workers.dev'"));
   assert.ok(html.includes('Trivia Tuesdays — New question at 7 a.m. Eastern. Answer at 8 p.m.'));
+});
+
+test('preview shows the source-verified October 27 answer with intended cutoff label', async () => {
+  const { elements, fetches, timers } = await renderTrivia('', undefined, 'preview-tdcreboot.link-ventures.workers.dev');
+  assert.equal(elements.get('triviaDate').textContent, 'Simulated preview — Tue, Oct 27, 8 p.m. Eastern (Oct 28, 00:00 UTC)');
+  assert.equal(elements.get('trivia').toggles['is-revealed'], true);
+  assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.toggles['is-correct']), [false, false, true, false]);
+  assert.equal(elements.get('triviaStatus').textContent, posted);
+  assert.equal(elements.get('triviaCtaLabel').textContent, 'See it in WhatsApp');
+  assert.equal(fetches, 0);
+  assert.equal(timers.length, 0);
+});
+
+test('an unrelated hostname never activates the preview reveal', async () => {
+  const { elements, timers } = await renderTrivia('', undefined, 'unrelated.example');
+  assert.equal(elements.get('trivia').toggles['is-revealed'], false);
+  assert.ok(elements.get('triviaChoices').children.every(e => !e.toggles['is-correct']));
+  assert.equal(timers.length, 0);
 });
