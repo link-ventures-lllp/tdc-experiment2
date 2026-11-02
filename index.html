@@ -1098,24 +1098,19 @@
       return;
     }
 
-    // Verified October 27 question; reveal simulation is restricted to preview below.
+    // Verified November 3 question; opening and reveal are manual publications.
     const questionRound = {
-      "date": "2026-10-27",
-      "question": "What architectural boast appears in the house section of the 1990s books?",
+      "date": "2026-11-03",
+      "question": "Who was re-elected Rush Chairman for a second year in a row in the 1985 book?",
       "choices": [
-        "The only fraternity with a moat",
-        "The only fraternity with an elevator",
-        "The only fraternity with windows on all four sides",
-        "The tallest fraternity on Memorial Drive"
+        "Dave Blundin",
+        "Tom Nichols",
+        "Eric Clayberg",
+        "Ray Schmitt"
       ],
       "live": true,
-      "dateLabel": "Tue, Oct 27"
+      "dateLabel": "Tue, Nov 3"
     };
-    // Preview-only simulation; this is not a timed or production publication.
-    if(location.hostname === 'preview-tdcreboot.link-ventures.workers.dev'){
-      questionRound.correctIndex = 2;
-      questionRound.dateLabel = 'Simulated preview — Tue, Oct 27, 8 p.m. Eastern (Oct 28, 00:00 UTC)';
-    }
     render(questionRound);
   })();
 

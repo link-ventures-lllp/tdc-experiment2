@@ -39,9 +39,9 @@ for (const nextRound of [sample, { live: false }, undefined]) {
   test(`normal site stays pinned regardless of shared API state ${JSON.stringify(nextRound)}`, async () => {
     const { elements, timers, fetches } = await renderTrivia('', nextRound);
     assert.equal(elements.get('triviaStatus').textContent, voting);
-    assert.equal(elements.get('triviaDate').textContent, 'Tue, Oct 27');
-    assert.equal(elements.get('triviaQ').textContent, "What architectural boast appears in the house section of the 1990s books?");
-    assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.textContent), ["The only fraternity with a moat", "The only fraternity with an elevator", "The only fraternity with windows on all four sides", "The tallest fraternity on Memorial Drive"]);
+    assert.equal(elements.get('triviaDate').textContent, 'Tue, Nov 3');
+    assert.equal(elements.get('triviaQ').textContent, "Who was re-elected Rush Chairman for a second year in a row in the 1985 book?");
+    assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.textContent), ["Dave Blundin", "Tom Nichols", "Eric Clayberg", "Ray Schmitt"]);
     assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.toggles['is-correct']), [false, false, false, false]);
     assert.equal(elements.get('trivia').hidden, false);
     assert.equal(elements.get('trivia').toggles['is-revealed'], false);
@@ -69,30 +69,25 @@ test('existing live demo remains Sample and withholds answer highlight', async (
   assert.equal(fetches, 0);
 });
 
-test('October 27 question payload has no key; preview simulation is hostname gated, not timed', () => {
+test('November 3 public round contains no key or preview reveal gate', () => {
   const payload = JSON.parse(html.match(/const questionRound = (\{[\s\S]*?\});/)[1]);
-  assert.equal(payload.date, '2026-10-27');
+  assert.equal(payload.date, '2026-11-03');
   assert.deepEqual(Object.keys(payload).sort(), ['choices', 'date', 'dateLabel', 'live', 'question']);
-  assert.ok(!('correctIndex' in payload));
-  assert.ok(!html.includes('const answeredRound'));
-  assert.ok(html.includes("location.hostname === 'preview-tdcreboot.link-ventures.workers.dev'"));
+  const roundCode = html.split('const questionRound = ')[1].split('render(questionRound)')[0];
+  assert.ok(!roundCode.includes('correctIndex'));
+  assert.ok(!roundCode.includes('Simulated preview'));
+  assert.ok(!roundCode.includes('setTimeout'));
   assert.ok(html.includes('Trivia Tuesdays — New question at 7 a.m. Eastern. Answer at 8 p.m.'));
 });
 
-test('preview shows the source-verified October 27 answer with intended cutoff label', async () => {
-  const { elements, fetches, timers } = await renderTrivia('', undefined, 'preview-tdcreboot.link-ventures.workers.dev');
-  assert.equal(elements.get('triviaDate').textContent, 'Simulated preview — Tue, Oct 27, 8 p.m. Eastern (Oct 28, 00:00 UTC)');
-  assert.equal(elements.get('trivia').toggles['is-revealed'], true);
-  assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.toggles['is-correct']), [false, false, true, false]);
-  assert.equal(elements.get('triviaStatus').textContent, posted);
-  assert.equal(elements.get('triviaCtaLabel').textContent, 'See it in WhatsApp');
-  assert.equal(fetches, 0);
-  assert.equal(timers.length, 0);
-});
-
-test('an unrelated hostname never activates the preview reveal', async () => {
-  const { elements, timers } = await renderTrivia('', undefined, 'unrelated.example');
-  assert.equal(elements.get('trivia').toggles['is-revealed'], false);
-  assert.ok(elements.get('triviaChoices').children.every(e => !e.toggles['is-correct']));
-  assert.equal(timers.length, 0);
-});
+for (const hostname of ['preview-tdcreboot.link-ventures.workers.dev', 'unrelated.example']) {
+  test(`November 3 remains unrevealed on ${hostname}`, async () => {
+    const { elements, fetches, timers } = await renderTrivia('', undefined, hostname);
+    assert.equal(elements.get('triviaDate').textContent, 'Tue, Nov 3');
+    assert.equal(elements.get('trivia').toggles['is-revealed'], false);
+    assert.ok(elements.get('triviaChoices').children.every(e => !e.toggles['is-correct']));
+    assert.equal(elements.get('triviaCtaLabel').textContent, 'Vote in WhatsApp');
+    assert.equal(fetches, 0);
+    assert.equal(timers.length, 0);
+  });
+}
