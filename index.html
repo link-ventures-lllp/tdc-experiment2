@@ -1053,7 +1053,7 @@
   })();
 
   /* ========================= DAILY TRIVIA =========================
-     Owner-requested October 27 round, verified through the existing
+     Owner-requested November 3 round, verified through the existing
      Box-backed date helper. Keep this display until the next manual website
      update; do not advance or reveal with the shared API’s daily clock. */
   (function(){
@@ -1098,7 +1098,7 @@
       return;
     }
 
-    // Verified November 3 question; opening and reveal are manual publications.
+    // Verified November 3 question and owner-approved answer; publication is manual.
     const questionRound = {
       "date": "2026-11-03",
       "question": "Who was re-elected Rush Chairman for a second year in a row in the 1985 book?",
@@ -1109,7 +1109,8 @@
         "Ray Schmitt"
       ],
       "live": true,
-      "dateLabel": "Tue, Nov 3"
+      "dateLabel": "Tue, Nov 3",
+      "correctIndex": 2
     };
     render(questionRound);
   })();
