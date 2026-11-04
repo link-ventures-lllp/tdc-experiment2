@@ -38,14 +38,14 @@ const voting = 'Vote in today’s poll in the brotherhood WhatsApp group. The an
 for (const nextRound of [sample, { live: false }, undefined]) {
   test(`normal site stays pinned regardless of shared API state ${JSON.stringify(nextRound)}`, async () => {
     const { elements, timers, fetches } = await renderTrivia('', nextRound);
-    assert.equal(elements.get('triviaStatus').textContent, voting);
+    assert.equal(elements.get('triviaStatus').textContent, posted);
     assert.equal(elements.get('triviaDate').textContent, 'Tue, Nov 3');
     assert.equal(elements.get('triviaQ').textContent, "Who was re-elected Rush Chairman for a second year in a row in the 1985 book?");
     assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.textContent), ["Dave Blundin", "Tom Nichols", "Eric Clayberg", "Ray Schmitt"]);
-    assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.toggles['is-correct']), [false, false, false, false]);
+    assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.toggles['is-correct']), [false, false, true, false]);
     assert.equal(elements.get('trivia').hidden, false);
-    assert.equal(elements.get('trivia').toggles['is-revealed'], false);
-    assert.equal(elements.get('triviaCtaLabel').textContent, 'Vote in WhatsApp');
+    assert.equal(elements.get('trivia').toggles['is-revealed'], true);
+    assert.equal(elements.get('triviaCtaLabel').textContent, 'See it in WhatsApp');
     assert.equal(fetches, 0);
     assert.equal(timers.length, 0);
   });
@@ -69,24 +69,26 @@ test('existing live demo remains Sample and withholds answer highlight', async (
   assert.equal(fetches, 0);
 });
 
-test('November 3 public round contains no key or preview reveal gate', () => {
+test('November 3 answer uses source-verified option C with no automatic schedule', () => {
   const payload = JSON.parse(html.match(/const questionRound = (\{[\s\S]*?\});/)[1]);
   assert.equal(payload.date, '2026-11-03');
-  assert.deepEqual(Object.keys(payload).sort(), ['choices', 'date', 'dateLabel', 'live', 'question']);
+  assert.deepEqual(Object.keys(payload).sort(), ['choices', 'correctIndex', 'date', 'dateLabel', 'live', 'question']);
   const roundCode = html.split('const questionRound = ')[1].split('render(questionRound)')[0];
-  assert.ok(!roundCode.includes('correctIndex'));
+  assert.equal(payload.correctIndex, 2);
+  assert.equal(payload.choices[payload.correctIndex], 'Eric Clayberg');
   assert.ok(!roundCode.includes('Simulated preview'));
   assert.ok(!roundCode.includes('setTimeout'));
   assert.ok(html.includes('Trivia Tuesdays — New question at 7 a.m. Eastern. Answer at 8 p.m.'));
 });
 
 for (const hostname of ['preview-tdcreboot.link-ventures.workers.dev', 'unrelated.example']) {
-  test(`November 3 remains unrevealed on ${hostname}`, async () => {
+  test(`November 3 remains answered on ${hostname}`, async () => {
     const { elements, fetches, timers } = await renderTrivia('', undefined, hostname);
     assert.equal(elements.get('triviaDate').textContent, 'Tue, Nov 3');
-    assert.equal(elements.get('trivia').toggles['is-revealed'], false);
-    assert.ok(elements.get('triviaChoices').children.every(e => !e.toggles['is-correct']));
-    assert.equal(elements.get('triviaCtaLabel').textContent, 'Vote in WhatsApp');
+    assert.equal(elements.get('trivia').toggles['is-revealed'], true);
+    assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.toggles['is-correct']), [false, false, true, false]);
+    assert.equal(elements.get('triviaCtaLabel').textContent, 'See it in WhatsApp');
+    assert.equal(elements.get('triviaStatus').textContent, posted);
     assert.equal(fetches, 0);
     assert.equal(timers.length, 0);
   });
