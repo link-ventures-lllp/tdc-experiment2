@@ -1053,7 +1053,7 @@
   })();
 
   /* ========================= DAILY TRIVIA =========================
-     Owner-requested November 3 round, verified through the existing
+     Owner-requested November 10 round, verified through the existing
      Box-backed date helper. Keep this display until the next manual website
      update; do not advance or reveal with the shared API’s daily clock. */
   (function(){
@@ -1098,19 +1098,18 @@
       return;
     }
 
-    // Verified November 3 question and owner-approved answer; publication is manual.
+    // Verified November 10 question; answer withheld until an explicit manual update.
     const questionRound = {
-      "date": "2026-11-03",
-      "question": "Who was re-elected Rush Chairman for a second year in a row in the 1985 book?",
+      "date": "2026-11-10",
+      "question": "According to the 1997–2001 books, which magazine featured the infamous 'Bondage Party'?",
       "choices": [
-        "Dave Blundin",
-        "Tom Nichols",
-        "Eric Clayberg",
-        "Ray Schmitt"
+        "Time",
+        "Playboy",
+        "Rolling Stone",
+        "Technology Review"
       ],
       "live": true,
-      "dateLabel": "Tue, Nov 3",
-      "correctIndex": 2
+      "dateLabel": "Tue, Nov 10"
     };
     render(questionRound);
   })();
