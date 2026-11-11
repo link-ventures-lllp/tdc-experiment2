@@ -1098,7 +1098,7 @@
       return;
     }
 
-    // Verified November 10 question; answer withheld until an explicit manual update.
+    // Verified November 10 question and owner-approved answer.
     const questionRound = {
       "date": "2026-11-10",
       "question": "According to the 1997–2001 books, which magazine featured the infamous 'Bondage Party'?",
@@ -1111,6 +1111,8 @@
       "live": true,
       "dateLabel": "Tue, Nov 10"
     };
+    // Source-verified option C, revealed only by this owner-approved manual update.
+    questionRound.correctIndex = 2;
     render(questionRound);
   })();
 
