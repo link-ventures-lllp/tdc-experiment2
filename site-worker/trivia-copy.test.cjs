@@ -38,14 +38,14 @@ const voting = 'Vote in today’s poll in the brotherhood WhatsApp group. The an
 for (const nextRound of [sample, { live: false }, undefined]) {
   test(`normal site stays pinned regardless of shared API state ${JSON.stringify(nextRound)}`, async () => {
     const { elements, timers, fetches } = await renderTrivia('', nextRound);
-    assert.equal(elements.get('triviaStatus').textContent, voting);
+    assert.equal(elements.get('triviaStatus').textContent, posted);
     assert.equal(elements.get('triviaDate').textContent, 'Tue, Nov 10');
     assert.equal(elements.get('triviaQ').textContent, "According to the 1997–2001 books, which magazine featured the infamous 'Bondage Party'?");
     assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.textContent), ["Time", "Playboy", "Rolling Stone", "Technology Review"]);
-    assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.toggles['is-correct']), [false, false, false, false]);
+    assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.toggles['is-correct']), [false, false, true, false]);
     assert.equal(elements.get('trivia').hidden, false);
-    assert.equal(elements.get('trivia').toggles['is-revealed'], false);
-    assert.equal(elements.get('triviaCtaLabel').textContent, 'Vote in WhatsApp');
+    assert.equal(elements.get('trivia').toggles['is-revealed'], true);
+    assert.equal(elements.get('triviaCtaLabel').textContent, 'See it in WhatsApp');
     assert.equal(fetches, 0);
     assert.equal(timers.length, 0);
   });
@@ -69,27 +69,36 @@ test('existing live demo remains Sample and withholds answer highlight', async (
   assert.equal(fetches, 0);
 });
 
-test('November 10 question-open withholds the private key with no automatic schedule', () => {
+test('November 10 answered round uses source-verified option C with no automatic schedule', () => {
   const payload = JSON.parse(html.match(/const questionRound = (\{[\s\S]*?\});/)[1]);
   assert.equal(payload.date, '2026-11-10');
   assert.deepEqual(Object.keys(payload).sort(), ['choices', 'date', 'dateLabel', 'live', 'question']);
   const roundCode = html.split('const questionRound = ')[1].split('render(questionRound)')[0];
   assert.ok(!('correctIndex' in payload));
-  assert.ok(!/correctIndex|correctAnswer|answerKey/.test(roundCode));
+  assert.ok(roundCode.includes('questionRound.correctIndex = 2;'));
+  assert.ok(!/correctAnswer|answerKey/.test(roundCode));
   assert.ok(!roundCode.includes('Simulated preview'));
   assert.ok(!roundCode.includes('setTimeout'));
   assert.ok(html.includes('Trivia Tuesdays — New question at 7 a.m. Eastern. Answer at 8 p.m.'));
 });
 
 for (const hostname of ['preview-tdcreboot.link-ventures.workers.dev', 'unrelated.example']) {
-  test(`November 10 remains question-open on ${hostname}`, async () => {
+  test(`November 10 remains answered on ${hostname}`, async () => {
     const { elements, fetches, timers } = await renderTrivia('', undefined, hostname);
     assert.equal(elements.get('triviaDate').textContent, 'Tue, Nov 10');
-    assert.equal(elements.get('trivia').toggles['is-revealed'], false);
-    assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.toggles['is-correct']), [false, false, false, false]);
-    assert.equal(elements.get('triviaCtaLabel').textContent, 'Vote in WhatsApp');
-    assert.equal(elements.get('triviaStatus').textContent, voting);
+    assert.equal(elements.get('trivia').toggles['is-revealed'], true);
+    assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.toggles['is-correct']), [false, false, true, false]);
+    assert.equal(elements.get('triviaCtaLabel').textContent, 'See it in WhatsApp');
+    assert.equal(elements.get('triviaStatus').textContent, posted);
     assert.equal(fetches, 0);
     assert.equal(timers.length, 0);
   });
 }
+
+test('November 10 letter mapping highlights only C and preserves voter destination', async () => {
+  const { elements } = await renderTrivia('', sample);
+  const choices = elements.get('triviaChoices').children;
+  assert.deepEqual(Array.from(choices, e => e.dataset.letter), ['A', 'B', 'C', 'D']);
+  assert.deepEqual(Array.from(choices).filter(e => e.toggles['is-correct']).map(e => e.textContent), ['Rolling Stone']);
+  assert.equal(elements.get('triviaCta').href, 'https://example.invalid/group');
+});
