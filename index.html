@@ -1053,7 +1053,7 @@
   })();
 
   /* ========================= DAILY TRIVIA =========================
-     Owner-requested November 10 round, verified through the existing
+     Owner-requested November 17 round, verified through the existing
      Box-backed date helper. Keep this display until the next manual website
      update; do not advance or reveal with the shared API’s daily clock. */
   (function(){
@@ -1098,21 +1098,19 @@
       return;
     }
 
-    // Verified November 10 question and owner-approved answer.
+    // Verified November 17 question; answer withheld until an explicit manual update.
     const questionRound = {
-      "date": "2026-11-10",
-      "question": "According to the 1997–2001 books, which magazine featured the infamous 'Bondage Party'?",
+      "date": "2026-11-17",
+      "question": "The 1992–1997 books say the house was previously whose home?",
       "choices": [
-        "Time",
-        "Playboy",
-        "Rolling Stone",
-        "Technology Review"
+        "Dean Fassett's",
+        "MIT President Compton's",
+        "John Hay's",
+        "Richard Feynman"
       ],
       "live": true,
-      "dateLabel": "Tue, Nov 10"
+      "dateLabel": "Tue, Nov 17"
     };
-    // Source-verified option C, revealed only by this owner-approved manual update.
-    questionRound.correctIndex = 2;
     render(questionRound);
   })();
 
