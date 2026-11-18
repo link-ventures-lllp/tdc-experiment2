@@ -1098,7 +1098,7 @@
       return;
     }
 
-    // Verified November 17 question; answer withheld until an explicit manual update.
+    // Verified November 17 question and owner-approved answer.
     const questionRound = {
       "date": "2026-11-17",
       "question": "The 1992–1997 books say the house was previously whose home?",
@@ -1111,6 +1111,8 @@
       "live": true,
       "dateLabel": "Tue, Nov 17"
     };
+    // Source-verified option A, revealed only by this owner-approved manual update.
+    questionRound.correctIndex = 0;
     render(questionRound);
   })();
 
