@@ -39,9 +39,9 @@ for (const nextRound of [sample, { live: false }, undefined]) {
   test(`normal site stays pinned regardless of shared API state ${JSON.stringify(nextRound)}`, async () => {
     const { elements, timers, fetches } = await renderTrivia('', nextRound);
     assert.equal(elements.get('triviaStatus').textContent, voting);
-    assert.equal(elements.get('triviaDate').textContent, 'Tue, Nov 17');
-    assert.equal(elements.get('triviaQ').textContent, "The 1992–1997 books say the house was previously whose home?");
-    assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.textContent), ["Dean Fassett's", "MIT President Compton's", "John Hay's", "Richard Feynman"]);
+    assert.equal(elements.get('triviaDate').textContent, 'Tue, Nov 24');
+    assert.equal(elements.get('triviaQ').textContent, "The 2001 rush kickoff promised all the lobster you could eat plus which two meats?");
+    assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.textContent), ["Alligator and venison", "Bison and rabbit", "Buffalo and ostrich", "Kangaroo and elk"]);
     assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.toggles['is-correct']), [false, false, false, false]);
     assert.equal(elements.get('trivia').hidden, false);
     assert.equal(elements.get('trivia').toggles['is-revealed'], false);
@@ -69,9 +69,9 @@ test('existing live demo remains Sample and withholds answer highlight', async (
   assert.equal(fetches, 0);
 });
 
-test('November 17 question-open round withholds the private answer with no automatic schedule', () => {
+test('November 24 question-open round withholds the private answer with no automatic schedule', () => {
   const payload = JSON.parse(html.match(/const questionRound = (\{[\s\S]*?\});/)[1]);
-  assert.equal(payload.date, '2026-11-17');
+  assert.equal(payload.date, '2026-11-24');
   assert.deepEqual(Object.keys(payload).sort(), ['choices', 'date', 'dateLabel', 'live', 'question']);
   const roundCode = html.split('const questionRound = ')[1].split('render(questionRound)')[0];
   assert.ok(!('correctIndex' in payload));
@@ -83,9 +83,9 @@ test('November 17 question-open round withholds the private answer with no autom
 });
 
 for (const hostname of ['preview-tdcreboot.link-ventures.workers.dev', 'unrelated.example']) {
-  test(`November 17 remains unrevealed on ${hostname}`, async () => {
+  test(`November 24 remains unrevealed on ${hostname}`, async () => {
     const { elements, fetches, timers } = await renderTrivia('', undefined, hostname);
-    assert.equal(elements.get('triviaDate').textContent, 'Tue, Nov 17');
+    assert.equal(elements.get('triviaDate').textContent, 'Tue, Nov 24');
     assert.equal(elements.get('trivia').toggles['is-revealed'], false);
     assert.deepEqual(Array.from(elements.get('triviaChoices').children, e => e.toggles['is-correct']), [false, false, false, false]);
     assert.equal(elements.get('triviaCtaLabel').textContent, 'Vote in WhatsApp');
@@ -95,7 +95,7 @@ for (const hostname of ['preview-tdcreboot.link-ventures.workers.dev', 'unrelate
   });
 }
 
-test('November 17 letter mapping highlights no option and preserves voter destination', async () => {
+test('November 24 letter mapping highlights no option and preserves voter destination', async () => {
   const { elements } = await renderTrivia('', sample);
   const choices = elements.get('triviaChoices').children;
   assert.deepEqual(Array.from(choices, e => e.dataset.letter), ['A', 'B', 'C', 'D']);
