@@ -79,7 +79,8 @@ test('November 24 question-open round withholds the private answer with no autom
   assert.ok(!/correctAnswer|answerKey/.test(roundCode));
   assert.ok(!roundCode.includes('Simulated preview'));
   assert.ok(!roundCode.includes('setTimeout'));
-  assert.ok(html.includes('Trivia Tuesdays — New question at 7 a.m. Eastern. Answer at 8 p.m.'));
+  assert.equal(html.match(/<p class="trivia-note">([^<]*)<\/p>/)[1], 'Trivia Tuesdays — New question in the morning. Submit your answer by 8 p.m. Eastern');
+  assert.ok(!html.includes('Trivia Tuesdays — New question at 7 a.m. Eastern. Answer at 8 p.m.'));
 });
 
 for (const hostname of ['preview-tdcreboot.link-ventures.workers.dev', 'unrelated.example']) {
