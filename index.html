@@ -535,7 +535,7 @@
           </div>
         </div>
       </div>
-      <p class="trivia-note">Trivia Tuesdays — New question at 7 a.m. Eastern. Answer at 8 p.m.</p>
+      <p class="trivia-note">Trivia Tuesdays — New question in the morning. Submit your answer by 8 p.m. Eastern</p>
     </div>
   </section>
 
@@ -1098,21 +1098,19 @@
       return;
     }
 
-    // Verified November 17 question and owner-approved answer.
+    // Verified November 24 question; answer withheld until an explicit manual update.
     const questionRound = {
-      "date": "2026-11-17",
-      "question": "The 1992–1997 books say the house was previously whose home?",
+      "date": "2026-11-24",
+      "question": "The 2001 rush kickoff promised all the lobster you could eat plus which two meats?",
       "choices": [
-        "Dean Fassett's",
-        "MIT President Compton's",
-        "John Hay's",
-        "Richard Feynman"
+        "Alligator and venison",
+        "Bison and rabbit",
+        "Buffalo and ostrich",
+        "Kangaroo and elk"
       ],
       "live": true,
-      "dateLabel": "Tue, Nov 17"
+      "dateLabel": "Tue, Nov 24"
     };
-    // Source-verified option A, revealed only by this owner-approved manual update.
-    questionRound.correctIndex = 0;
     render(questionRound);
   })();
 
